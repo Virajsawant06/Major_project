@@ -218,15 +218,10 @@ def run_scan_with_ui(url):
                 f"[dim]{finding['endpoint'][:45]}[/dim]"
             )
 
-        results = run_zap_scan_live(
-            url,
-            on_spider_progress=on_spider_progress,
-            on_spider_done=on_spider_done,
-            on_passive_done=on_passive_done,
-            on_active_progress=on_active_progress,
-            on_active_done=on_active_done,
-            on_finding=on_finding,
-        )
+        from src.intelligence.brain import AttackBrain
+        brain = AttackBrain()
+        results = brain.attack(url, console=console)
+
 
     return results
 
