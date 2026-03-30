@@ -1,5 +1,5 @@
-import requests
 import re
+import requests
 from bs4 import BeautifulSoup
 
 SENSITIVE_PATHS = [
@@ -27,27 +27,45 @@ SENSITIVE_PATHS = [
     "/_next/static/chunks/",
 ]
 
+
 def check_exposure(target_url, console=None):
+    """
+    Check for exposed sensitive files and API routes.
+
+    console=None → completely silent (used by brain.py)
+    console=<Console> → prints progress to terminal (used by direct CLI calls)
+    """
+
     def log(msg):
-        if console: console.print(msg)
-        else: print(msg)
+        # Only print if a console was explicitly provided
+        # Never use plain print() — Rich markup would leak as raw text
+        if console:
+            console.print(msg)
 
     log("[yellow][*] Checking for exposed sensitive files...[/yellow]")
 
     findings = []
     target_url = target_url.rstrip("/")
 
+    # Anti-False Positive Check: Does the server return 200 for EVERYTHING?
+    try:
+        r_test = requests.get(target_url + "/this-file-definitely-does-not-exist-999.txt", timeout=5, verify=False, allow_redirects=False)
+        if r_test.status_code in [200, 301, 302]:
+            log("[dim][-] Server returns 200/301 for random paths (Catch-All). Skipping static file baseline checks.[/dim]")
+            SENSITIVE_PATHS = [] # Disable the list
+    except Exception:
+        pass
+
     for path in SENSITIVE_PATHS:
         try:
             url = target_url + path
             r = requests.get(url, timeout=5, verify=False,
-                           allow_redirects=False)
+                             allow_redirects=False)
 
             if r.status_code in [200, 301, 302]:
                 severity = "High"
                 description = f"Sensitive path accessible: {path}"
 
-                # Upgrade severity for really dangerous ones
                 if any(x in path for x in [".env", ".git", "swagger",
                                             "actuator", "dump.sql"]):
                     severity = "High"
@@ -62,51 +80,77 @@ def check_exposure(target_url, console=None):
                         description += "Spring Boot actuator exposed — server internals visible."
 
                 findings.append({
-                    "tool": "exposure",
-                    "vuln_type": f"Exposed File: {path}",
-                    "severity": severity,
-                    "endpoint": url,
-                    "method": "GET",
-                    "evidence": f"HTTP {r.status_code}",
-                    "description": description,
+                    "tool":          "exposure",
+                    "vuln_type":     f"Exposed File: {path}",
+                    "severity":      severity,
+                    "endpoint":      url,
+                    "method":        "GET",
+                    "evidence":      f"HTTP {r.status_code}",
+                    "description":   description,
                     "hacker_impact": f"Attacker can access {path} directly"
                 })
                 log(f"[red]  [!] FOUND: {path} → HTTP {r.status_code}[/red]")
-            else:
-                log(f"[dim]  [ ] {path} → {r.status_code}[/dim]")
+            # Silent on misses — no log for 404s
 
         except Exception:
             continue
 
-    # Also extract API routes from JS bundle if Next.js
+    # Extract API routes from JS bundle (Advanced parsing)
     try:
         r = requests.get(target_url, timeout=8, verify=False)
         soup = BeautifulSoup(r.text, 'html.parser')
-        scripts = [s.get('src','') for s in soup.find_all('script', src=True)]
+        
+        # Get all external scripts AND inline scripts
+        js_sources = []
+        for s in soup.find_all('script'):
+            if s.get('src'):
+                js_sources.append(s.get('src'))
+            elif s.string:
+                js_sources.append(('inline', s.string))
 
-        for script_src in scripts[:5]:  # check first 5 JS files
-            if not script_src: continue
-            url = target_url + script_src if script_src.startswith('/') else script_src
-            try:
-                js = requests.get(url, timeout=8, verify=False).text
-                routes = re.findall(r'["\'](/api/[^"\'?\s]{3,50})["\']', js)
-                routes += re.findall(r'["\'](/rest/[^"\'?\s]{3,50})["\']', js)
-                if routes:
-                    findings.append({
-                        "tool": "exposure",
-                        "vuln_type": "API Routes Extracted from JS Bundle",
-                        "severity": "Medium",
-                        "endpoint": url,
-                        "method": "GET",
-                        "evidence": f"Found {len(set(routes))} API routes in JS",
-                        "description": f"API routes visible in JS bundle: {list(set(routes))[:10]}",
-                        "hacker_impact": "Attacker has a complete map of your API without needing docs"
-                    })
-                    log(f"[yellow]  [!] {len(set(routes))} API routes extracted from JS[/yellow]")
-                    break
-            except:
-                continue
-    except:
+        all_routes = set()
+        
+        # Regex to catch robust endpoints (starts with /api, /v1, /graphql OR typical fetch/axios calls)
+        path_regex = r'["\']((?:(?:/api/|/rest/|/v\d+/|/graphql)[^"\'?\s]+)|(?:https?://[^"\'?\s]+))["\']'
+        fetch_regex = r'(?:fetch|axios(?:\.\w+)?|XMLHttpRequest\.open\([^,]+,)\s*\(?\s*["\']([^"\'\s]+)["\']'
+
+        for src in js_sources[:20]: # Parse up to 20 scripts
+            js = ""
+            if isinstance(src, tuple) and src[0] == 'inline':
+                js = src[1]
+            else:
+                url = target_url.rstrip('/') + src if src.startswith('/') else src
+                if not url.startswith('http'):
+                    url = target_url.rstrip('/') + '/' + src
+                try:
+                    js = requests.get(url, timeout=8, verify=False).text
+                except Exception:
+                    continue
+            
+            # Find routes
+            matches = re.findall(path_regex, js)
+            matches += re.findall(fetch_regex, js)
+            
+            for m in matches:
+                url_str = m if isinstance(m, str) else m[-1]
+                # Filter out obvious false positives (JS files, short strings)
+                if len(url_str) > 3 and not url_str.endswith('.js') and not url_str.endswith('.html') and not url_str.endswith('.css'):
+                    all_routes.add(url_str)
+
+        if all_routes:
+            findings.append({
+                "tool":          "exposure",
+                "vuln_type":     "API Routes Extracted from JS Bundle",
+                "severity":      "Medium",
+                "endpoint":      target_url,
+                "method":        "GET",
+                "evidence":      f"Found {len(all_routes)} API routes in JS",
+                "description":   f"Script contained {len(all_routes)} hardcoded API calls/routes: {list(all_routes)[:10]}...",
+                "hacker_impact": "An attacker has a map of your backend API operations without needing official documentation."
+            })
+            log(f"[yellow]  [!] {len(all_routes)} API calls/routes extracted from JS bundle[/yellow]")
+            
+    except Exception:
         pass
 
     log(f"[green][+] Exposure check complete — {len(findings)} findings[/green]")

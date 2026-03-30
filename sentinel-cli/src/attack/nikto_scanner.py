@@ -1,11 +1,19 @@
 import subprocess
 import json
-import re
+
 
 def run_nikto(target_url, console=None):
+    """
+    Run Nikto via Docker.
+
+    console=None → completely silent (used by brain.py)
+    console=<Console> → prints progress to terminal (used by direct CLI calls)
+    """
+
     def log(msg):
-        if console: console.print(msg)
-        else: print(msg)
+        # Only print if a console was explicitly provided
+        if console:
+            console.print(msg)
 
     log("[yellow][*] Running Nikto — server misconfiguration scan...[/yellow]")
 
@@ -25,15 +33,15 @@ def run_nikto(target_url, console=None):
                 item = json.loads(line)
                 if item.get("id"):
                     findings.append({
-                        "tool": "nikto",
-                        "vuln_type": item.get("msg", "Unknown"),
-                        "severity": "Medium",
-                        "endpoint": target_url + item.get("url", ""),
-                        "method": "GET",
-                        "evidence": item.get("msg", ""),
+                        "tool":        "nikto",
+                        "vuln_type":   item.get("msg", "Unknown"),
+                        "severity":    "Medium",
+                        "endpoint":    target_url + item.get("url", ""),
+                        "method":      "GET",
+                        "evidence":    item.get("msg", ""),
                         "description": item.get("msg", ""),
                     })
-            except:
+            except Exception:
                 continue
 
         log(f"[green][+] Nikto complete — {len(findings)} findings[/green]")

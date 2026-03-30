@@ -29,6 +29,8 @@ warnings.filterwarnings("ignore")
 from src.attack.zap_scanner import run_zap_scan_live
 from src.attack.nikto_scanner import run_nikto
 from src.attack.exposure import check_exposure
+from src.attack.auth_scanner import run_auth_scan
+from src.attack.idor_scanner import run_idor_scan
 from src.utils.cleaner import build_clean_report
 
 load_dotenv()
@@ -49,6 +51,8 @@ Never skip this. Never call ZAP before recon.
 PHASE 2 — DECIDE BASED ON WHAT YOU FOUND
 Read exposure results before choosing next tool.
 - Found swagger or API routes? Those are your attack map.
+- Found login forms or /auth endpoints? Call run_auth_scan.
+- Want to test business logic and access controls? Call run_idor_scan.
 - Found .env or .git? Already critical.
 - Interesting endpoints? Run run_zap_scan.
 - Want server-level info? Run run_nikto_scan.
@@ -127,6 +131,44 @@ TOOL_SCHEMAS = [
                 "required": ["target_url"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "run_auth_scan",
+            "description": (
+                "Authentication Phase 3 Test. Checks default credentials, auth SQL injection, and token weaknesses. Run if login/auth endpoints are discovered."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "target_url": {
+                        "type": "string",
+                        "description": "Full URL of the target"
+                    }
+                },
+                "required": ["target_url"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "run_idor_scan",
+            "description": (
+                "Authenticated Phase 4 Test. Checks for Insecure Direct Object Reference (parameter tampering) and access control flaws. Requires auth headers to be effective."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "target_url": {
+                        "type": "string",
+                        "description": "Full URL of the target"
+                    }
+                },
+                "required": ["target_url"]
+            }
+        }
     }
 ]
 
@@ -136,11 +178,13 @@ TOOL_LABELS = {
     "run_exposure_check": "Exposure check   (sensitive files, API routes)",
     "run_zap_scan":       "ZAP active scan  (SQLi, XSS, injections)",
     "run_nikto_scan":     "Nikto scan       (server misconfigurations)",
+    "run_auth_scan":      "Auth scan        (SQLi, Default Creds)",
+    "run_idor_scan":      "IDOR scan        (Parameter Tampering)",
 }
 
 # ── Tool execution ─────────────────────────────────────────────────────────────
 
-def execute_tool(tool_name: str, target_url: str) -> list:
+def execute_tool(tool_name: str, target_url: str, auth_header: str = None, login_url: str = None, request_file: str = None) -> list:
     """
     Runs the tool silently. No internal print output reaches the user.
     Returns a list of findings. Never raises.
@@ -157,6 +201,12 @@ def execute_tool(tool_name: str, target_url: str) -> list:
         elif tool_name == "run_nikto_scan":
             # console=None suppresses Nikto's internal progress prints
             return run_nikto(target_url, console=None)
+
+        elif tool_name == "run_auth_scan":
+            return run_auth_scan(target_url, login_url=login_url, request_file=request_file, console=None)
+
+        elif tool_name == "run_idor_scan":
+            return run_idor_scan(target_url, auth_header=auth_header, request_file=request_file, console=None)
 
         else:
             return [{"error": f"Unknown tool: {tool_name}"}]
@@ -196,7 +246,7 @@ class AttackBrain:
             )
         self.client = Groq(api_key=api_key)
 
-    def attack(self, target_url: str, console=None) -> dict:
+    def attack(self, target_url: str, console=None, auth_header=None, login_url=None, request_file=None) -> dict:
         """
         AI-orchestrated attack loop. Clean terminal output only.
         GROQ reasons internally — user sees phase + finding counts only.
@@ -266,7 +316,7 @@ class AttackBrain:
                 label = TOOL_LABELS.get(tool_name, tool_name)
                 con.print(f"\n  [cyan]▸[/cyan] {label}")
 
-                findings = execute_tool(tool_name, url)
+                findings = execute_tool(tool_name, url, auth_header=auth_header, login_url=login_url, request_file=request_file)
 
                 # Separate real findings from errors
                 valid   = [f for f in findings if "error" not in f]

@@ -163,7 +163,7 @@ def show_output_path(path):
     console.print(f"  [dim]Results saved →[/dim] [cyan]{path}[/cyan]")
     console.print()
 
-def run_scan_with_ui(url):
+def run_scan_with_ui(url, auth_header=None, login_url=None, request_file=None):
     from src.attack.zap_scanner import run_zap_scan_live
 
     findings_so_far = []
@@ -220,35 +220,80 @@ def run_scan_with_ui(url):
 
         from src.intelligence.brain import AttackBrain
         brain = AttackBrain()
-        results = brain.attack(url, console=console)
+        results = brain.attack(url, console=console, auth_header=auth_header, login_url=login_url, request_file=request_file)
 
 
     return results
 
 def main():
-    show_banner()
+    if len(sys.argv) < 2:
+        from src.cli.repl import interactive_loop
+        interactive_loop()
+        return
 
-    url = get_arg("--url")
-    if not url:
-        console.print()
-        console.print("  [bold white]Usage:[/bold white]")
-        console.print("  [cyan]python main.py --url http://target.com[/cyan]")
-        console.print()
-        sys.exit(1)
+    command = sys.argv[1].lower()
 
-    validate_url(url)
-    ethics_check(url)
+    if command == "scan":
+        show_banner()
+        url = get_arg("--url")
+        if not url:
+            console.print()
+            console.print("  [bold white]Usage:[/bold white]")
+            console.print("  [cyan]sentinel scan --url http://target.com[/cyan]")
+            console.print()
+            sys.exit(1)
 
-    results = run_scan_with_ui(url)
+        auth_header = get_arg("--auth-header")
+        login_url = get_arg("--login-url")
+        request_file = get_arg("--request-file")
 
-    os.makedirs("output", exist_ok=True)
-    output_file = f"output/{results['scan_id']}.json"
-    with open(output_file, "w") as f:
-        json.dump(results, f, indent=2)
+        validate_url(url)
+        ethics_check(url)
 
-    show_summary(results)
-    show_findings(results)
-    show_output_path(output_file)
+        results = run_scan_with_ui(url, auth_header, login_url, request_file)
+
+        os.makedirs("output", exist_ok=True)
+        output_file = f"output/{results['scan_id']}.json"
+        with open(output_file, "w") as f:
+            json.dump(results, f, indent=2)
+
+        show_summary(results)
+        show_findings(results)
+        show_output_path(output_file)
+
+    elif command == "patches":
+        show_banner()
+        target_file = None
+        if len(sys.argv) > 2 and sys.argv[2].endswith('.json'):
+            target_file = sys.argv[2]
+        else:
+            output_dir = os.path.join(os.getcwd(), 'output')
+            if os.path.exists(output_dir):
+                files = [os.path.join(output_dir, f) for f in os.listdir(output_dir) if f.endswith('.json')]
+                if files:
+                    target_file = max(files, key=os.path.getctime)
+                    console.print(f"  [dim]Auto-selected latest scan: {target_file}[/dim]\n")
+        
+        if not target_file:
+            console.print("  [red]No scan file provided and none found in output directory.[/red]")
+            sys.exit(1)
+            
+        from src.patch.engine import generate_patches
+        from src.patch.ui import render_patch_ui
+        
+        with console.status("[bold green]Analyzing scan architecture and generating patches via Groq...[/bold green]"):
+            try:
+                patch_data, summary = generate_patches(target_file)
+            except Exception as e:
+                console.print(f"  [red]Error generating patches: {e}[/red]")
+                sys.exit(1)
+                
+        render_patch_ui(patch_data, summary)
+        
+    else:
+        # Drop into interactive shell for any unrecognized startup command
+        from src.cli.repl import interactive_loop
+        interactive_loop()
 
 if __name__ == "__main__":
     main()
