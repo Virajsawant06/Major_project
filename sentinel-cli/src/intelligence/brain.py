@@ -1,7 +1,7 @@
 """
-Sentinel Brain — GROQ Hacker Orchestrator
+Sentinel Brain — AI Hacker Orchestrator
 
-GROQ is the brain. src/attack/ modules are its hands.
+The AI is the brain. src/attack/ modules are its hands.
 
 What the user sees:
   - Which phase is running
@@ -10,7 +10,7 @@ What the user sees:
   - The final hacker analysis
 
 What the user does NOT see:
-  - GROQ's internal reasoning text
+  - The AI's internal reasoning text
   - Every path the exposure check tries
   - Repeated errors
   - Raw Rich markup tags
@@ -20,7 +20,7 @@ import os
 import json
 import warnings
 from datetime import datetime
-from groq import Groq
+from openai import OpenAI
 from dotenv import load_dotenv
 
 # Suppress urllib3/requests SSL warnings that flood the terminal
@@ -227,7 +227,7 @@ def execute_tool(tool_name: str, target_url: str, auth_header: str = None, login
 
 class AttackBrain:
     """
-    GROQ-powered hacker orchestrator.
+    OpenRouter-powered hacker orchestrator.
 
     Usage:
         brain = AttackBrain()
@@ -237,19 +237,21 @@ class AttackBrain:
     """
 
     def __init__(self):
-        api_key = os.getenv("GROQ_API_KEY")
+        api_key = os.getenv("OPENROUTER_API_KEY")
         if not api_key:
             raise ValueError(
-                "GROQ_API_KEY not set.\n"
-                "Run: sentinel keys set groq <your-key>\n"
-                "Free key at: console.groq.com"
+                "OPENROUTER_API_KEY not set.\n"
+                "Set OPENROUTER_API_KEY in .env"
             )
-        self.client = Groq(api_key=api_key)
+        self.client = OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=api_key
+        )
 
     def attack(self, target_url: str, console=None, auth_header=None, login_url=None, request_file=None) -> dict:
         """
         AI-orchestrated attack loop. Clean terminal output only.
-        GROQ reasons internally — user sees phase + finding counts only.
+        AI reasons internally — user sees phase + finding counts only.
         """
         from rich.console import Console
         from rich.rule import Rule
@@ -280,7 +282,7 @@ class AttackBrain:
         for step in range(MAX_STEPS):
 
             response = self.client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model="nvidia/nemotron-3-super-120b-a12b:free",
                 messages=messages,
                 tools=TOOL_SCHEMAS,
                 tool_choice="auto",
@@ -291,7 +293,7 @@ class AttackBrain:
             msg = response.choices[0].message
             messages.append(msg)
 
-            # GROQ's reasoning is intentionally hidden from user
+            # AI's reasoning is intentionally hidden from user
             # It goes into messages for context but not to terminal
 
             if not msg.tool_calls:
@@ -337,7 +339,7 @@ class AttackBrain:
                         errors_seen.add(msg_text)
                         con.print(f"    [yellow]![/yellow] {msg_text}")
 
-                # Feed result back to GROQ (truncate if huge)
+                # Feed result back to AI (truncate if huge)
                 result_str = json.dumps({
                     "findings_count": len(valid),
                     "findings": valid
@@ -371,7 +373,7 @@ class AttackBrain:
             "scan_id":        f"scan_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
             "target_url":     target_url,
             "scanned_at":     datetime.now().isoformat(),
-            "tool":           f"Sentinel Brain (GROQ + {', '.join(sorted(tools_used))})",
+            "tool":           f"Sentinel Brain (OpenRouter + {', '.join(sorted(tools_used))})",
             "total_findings": len(all_findings),
             "findings":       all_findings,
             "attack_summary": analysis,
@@ -380,7 +382,7 @@ class AttackBrain:
         return build_clean_report(raw)
 
     def _get_analysis(self, messages: list, findings: list, target_url: str) -> str:
-        """Silent GROQ call for the final plain-English summary."""
+        """Silent AI call for the final plain-English summary."""
         if not findings:
             return "No significant findings on this target."
 
@@ -399,7 +401,7 @@ class AttackBrain:
             }]
 
             resp = self.client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model="meta-llama/llama-3.3-70b-instruct:free",
                 messages=summary_messages,
                 temperature=0.3,
                 max_completion_tokens=300

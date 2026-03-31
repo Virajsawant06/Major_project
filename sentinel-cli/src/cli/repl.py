@@ -71,7 +71,7 @@ def interactive_loop():
                 from src.patch.engine import generate_patches
                 from src.patch.ui import render_patch_ui
                 
-                with console.status("[bold green]Analyzing scan architecture and generating patches via Groq...[/bold green]"):
+                with console.status("[bold green]Analyzing scan architecture and generating patches via AI...[/bold green]"):
                     try:
                         patch_data, summary = generate_patches(target_file)
                     except Exception as e:

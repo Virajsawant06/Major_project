@@ -1,6 +1,6 @@
 import os
 import json
-from groq import Groq
+from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -41,11 +41,14 @@ def generate_patches(scan_file):
     with open(scan_file, 'r', encoding='utf-8') as f:
         scan_data = json.load(f)
         
-    api_key = os.getenv("GROQ_API_KEY")
+    api_key = os.getenv("OPENROUTER_API_KEY")
     if not api_key:
-        raise ValueError("GROQ_API_KEY not found in .env. Cannot use Patch Engine.")
+        raise ValueError("OPENROUTER_API_KEY not found in .env. Cannot use Patch Engine.")
         
-    client = Groq(api_key=api_key)
+    client = OpenAI(
+        base_url="https://openrouter.ai/api/v1",
+        api_key=api_key,
+    )
     
     # We strip down the scan_data to send only what's necessary to Groq to save context tokens
     findings = scan_data.get("findings", [])
@@ -53,7 +56,7 @@ def generate_patches(scan_file):
     reduced_payload = [{"vuln": f["vuln_type"], "severity": f["severity"], "desc": f["description"][:200]} for f in findings[:20]]
     
     response = client.chat.completions.create(
-        model="mixtral-8x7b-32768",
+        model="qwen/qwen-2.5-coder-32b-instruct:free",
         temperature=0.1,
         response_format={"type": "json_object"},
         messages=[
@@ -67,4 +70,4 @@ def generate_patches(scan_file):
         patch_data = json.loads(content)
         return patch_data, scan_data.get("summary", {})
     except Exception as e:
-        raise RuntimeError(f"Failed to parse Groq AI output: {e}\nRaw: {content[:100]}...")
+        raise RuntimeError(f"Failed to parse OpenRouter AI output: {e}\nRaw: {content[:100]}...")

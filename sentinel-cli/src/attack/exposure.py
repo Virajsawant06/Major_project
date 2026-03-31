@@ -3,6 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 
 SENSITIVE_PATHS = [
+    # Original paths
     "/.env",
     "/.env.local",
     "/.env.production",
@@ -25,7 +26,123 @@ SENSITIVE_PATHS = [
     "/actuator/env",
     "/actuator/health",
     "/_next/static/chunks/",
+
+    # === Expanded Sensitive Paths ===
+
+    # Environment & Config Files
+    "/.env.example",
+    "/.env.dev",
+    "/.env.development",
+    "/.env.test",
+    "/.env.staging",
+    "/config.php",
+    "/config.yaml",
+    "/config.yml",
+    "/settings.php",
+    "/settings.py",
+    "/web.config",
+    "/wp-config.php",
+    "/application/config/config.php",
+    "/config/database.php",
+    "/database.yml",
+    "/secrets.json",
+    "/credentials.json",
+    "/appsettings.json",
+    "/appsettings.Development.json",
+
+    # Version Control
+    "/.git/index",
+    "/.git/logs/HEAD",
+    "/.git/logs/refs/heads/main",
+    "/.gitignore",
+    "/.svn/entries",
+    "/.hg/requires",
+
+    # Backup & Dump Files
+    "/backup.sql",
+    "/database.sql",
+    "/db_dump.sql",
+    "/dump.sql.gz",
+    "/backup.zip",
+    "/site_backup.tar.gz",
+    "/config.php.bak",
+    "/wp-config.php.bak",
+    "/index.php.bak",
+    "/*.bak",
+    "/*.old",
+    "/*.tmp",
+
+    # Logs & Debug
+    "/debug.log",
+    "/error.log",
+    "/access.log",
+    "/application.log",
+    "/logs/error.log",
+    "/debug.php",
+    "/test.php",
+    "/info.php",
+
+    # Admin & Login Panels
+    "/admin",
+    "/admin.php",
+    "/administrator",
+    "/login",
+    "/wp-admin",
+    "/cpanel",
+    "/phpmyadmin",
+    "/adminer.php",
+    "/backend",
+    "/dashboard",
+    "/manage",
+
+    # API Documentation & Endpoints
+    "/swagger-ui.html",
+    "/swagger/index.html",
+    "/redoc",
+    "/graphiql",
+    "/graphql",
+    "/api/v1",
+    "/api/v2",
+    "/v1/swagger.json",
+
+    # Spring Boot Actuator
+    "/actuator/info",
+    "/actuator/metrics",
+    "/actuator/beans",
+    "/actuator/mappings",
+    "/actuator/loggers",
+    "/actuator/heapdump",
+    "/actuator/threaddump",
+
+    # CMS & Framework Specific
+    "/joomla.xml",
+    "/configuration.php",
+    "/elmah.axd",
+    "/trace.axd",
+    "/wp-content/uploads/",
+
+    # Composer / Package Files
+    "/composer.json",
+    "/composer.lock",
+    "/package.json",
+    "/yarn.lock",
+    "/Gemfile",
+    "/Gemfile.lock",
+
+    # Other Common Sensitive Paths
+    "/.htaccess",
+    "/.htpasswd",
+    "/crossdomain.xml",
+    "/clientaccesspolicy.xml",
+    "/status",
+    "/heapdump",
+    "/vendor/",
+    "/core",
+    "/proc/self/environ",
+    "/etc/passwd",
 ]
+
+
 
 
 def check_exposure(target_url, console=None):

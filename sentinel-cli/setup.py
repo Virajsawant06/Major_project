@@ -13,6 +13,7 @@ setup(
         "python-dotenv",
         "python-nmap",
         "sslyze",
+        "openai",
     ],
     entry_points={
         "console_scripts": [
