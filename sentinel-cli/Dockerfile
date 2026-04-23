@@ -21,7 +21,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
 
 # Install ZAP
 ENV ZAP_VERSION=2.15.0
-RUN wget https://github.com/zaproxy/zaproxy/releases/download/v${ZAP_VERSION}/ZAP_${ZAP_VERSION}_Linux.tar.gz -O /tmp/zap.tar.gz \
+RUN wget https://github.com/zaproxy/zap-archive/releases/download/zap-v${ZAP_VERSION}/ZAP_${ZAP_VERSION}_Linux.tar.gz -O /tmp/zap.tar.gz \
     && tar -xzf /tmp/zap.tar.gz -C /opt/ \
     && mv /opt/ZAP_${ZAP_VERSION} /opt/zap \
     && rm /tmp/zap.tar.gz
