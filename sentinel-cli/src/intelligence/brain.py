@@ -1,7 +1,7 @@
 """
-Sentinel Brain — GROQ Hacker Orchestrator
+Sentinel Brain — AI Hacker Orchestrator
 
-GROQ is the brain. src/attack/ modules are its hands.
+The AI is the brain. src/attack/ modules are its hands.
 
 What the user sees:
   - Which phase is running
@@ -10,7 +10,7 @@ What the user sees:
   - The final hacker analysis
 
 What the user does NOT see:
-  - GROQ's internal reasoning text
+  - The AI's internal reasoning text
   - Every path the exposure check tries
   - Repeated errors
   - Raw Rich markup tags
@@ -20,8 +20,9 @@ import os
 import json
 import warnings
 from datetime import datetime
-from groq import Groq
+from openai import OpenAI
 from dotenv import load_dotenv
+from src.intelligence.models import SUMMARY_MODEL
 
 # Suppress urllib3/requests SSL warnings that flood the terminal
 warnings.filterwarnings("ignore")
@@ -29,6 +30,8 @@ warnings.filterwarnings("ignore")
 from src.attack.zap_scanner import run_zap_scan_live
 from src.attack.nikto_scanner import run_nikto
 from src.attack.exposure import check_exposure
+from src.attack.auth_scanner import run_auth_scan
+from src.attack.idor_scanner import run_idor_scan
 from src.utils.cleaner import build_clean_report
 
 load_dotenv()
@@ -41,24 +44,17 @@ authorization to test the target provided.
 
 You think exactly like an experienced attacker. Your methodology:
 
-PHASE 1 — ALWAYS START WITH EXPOSURE CHECK
-Call run_exposure_check first. It is fast and finds the highest-value targets:
-.env files with credentials, .git directories, swagger docs, source maps.
-Never skip this. Never call ZAP before recon.
+PHASE 1 — FAST RECON (ALWAYS RUN THESE)
+1. Call run_exposure_check to find sensitive files and JS routes.
+2. Call run_param_extract to crawl for forms and query parameters.
+3. Call run_ssl_check to verify certificate security.
 
-PHASE 2 — DECIDE BASED ON WHAT YOU FOUND
-Read exposure results before choosing next tool.
-- Found swagger or API routes? Those are your attack map.
-- Found .env or .git? Already critical.
-- Interesting endpoints? Run run_zap_scan.
-- Want server-level info? Run run_nikto_scan.
-- Exposure found nothing? Still run ZAP.
+PHASE 2 — NATIVE ATTACK ENGINE (ALWAYS RUN THIS)
+4. Call run_native_engine. This is your primary weapon. It uses the parameters found in Phase 1 to test for XSS, CSRF, SQLi, SSRF, and checks headers, cookies, etc.
 
-PHASE 3 — CHAIN FINDINGS
-Connect findings into real attack paths. Do not report in isolation.
-
-PHASE 4 — KNOW WHEN TO STOP
-Maximum 10 tool calls. Do not run the same tool twice.
+PHASE 3 — DEEP SCAN TOOLS (ONLY IF AVAILABLE)
+If the user requested a deep scan, you will have additional tools available (run_zap_scan, run_nikto_scan, run_auth_scan, run_idor_scan). Use them.
+If they are not in your tools list, DO NOT try to call them.
 
 WHEN DONE: Write a clear attack summary in plain English.
 Be specific. Be honest about severity. Do not hype low-risk findings.
@@ -71,61 +67,64 @@ TOOL_SCHEMAS = [
         "type": "function",
         "function": {
             "name": "run_exposure_check",
-            "description": (
-                "Checks for exposed sensitive files: .env, .git, swagger, "
-                "config files, database dumps, actuators. Also extracts "
-                "hidden API routes from JS bundles. Fast — always run first."
-            ),
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "target_url": {
-                        "type": "string",
-                        "description": "Full URL of the target"
-                    }
-                },
-                "required": ["target_url"]
-            }
+            "description": "Checks for exposed sensitive files and mines JS bundles for API routes. Fast — always run first.",
+            "parameters": {"type": "object", "properties": {"target_url": {"type": "string"}}, "required": ["target_url"]}
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "run_param_extract",
+            "description": "Crawls the target to discover forms and query parameters to feed to the native engine.",
+            "parameters": {"type": "object", "properties": {"target_url": {"type": "string"}}, "required": ["target_url"]}
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "run_ssl_check",
+            "description": "Checks SSL/TLS certificate security.",
+            "parameters": {"type": "object", "properties": {"target_url": {"type": "string"}}, "required": ["target_url"]}
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "run_native_engine",
+            "description": "Primary attack engine. Tests 11 vulnerability categories in parallel including XSS, SQLi, SSRF, CORS, Headers. Uses params found by param_extract.",
+            "parameters": {"type": "object", "properties": {"target_url": {"type": "string"}}, "required": ["target_url"]}
         }
     },
     {
         "type": "function",
         "function": {
             "name": "run_zap_scan",
-            "description": (
-                "Full OWASP ZAP spider + active scan. Finds SQL injection, XSS, "
-                "CSRF, insecure headers. Heavy weapon — use after recon."
-            ),
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "target_url": {
-                        "type": "string",
-                        "description": "Full URL of the target"
-                    }
-                },
-                "required": ["target_url"]
-            }
+            "description": "Full OWASP ZAP spider + active scan. Heavy weapon — use after native engine.",
+            "parameters": {"type": "object", "properties": {"target_url": {"type": "string"}}, "required": ["target_url"]}
         }
     },
     {
         "type": "function",
         "function": {
             "name": "run_nikto_scan",
-            "description": (
-                "Nikto web server scanner. Finds outdated software, dangerous "
-                "default files, server misconfigurations. Requires Docker."
-            ),
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "target_url": {
-                        "type": "string",
-                        "description": "Full URL of the target"
-                    }
-                },
-                "required": ["target_url"]
-            }
+            "description": "Nikto web server scanner. Finds outdated software and misconfigurations. Requires Docker.",
+            "parameters": {"type": "object", "properties": {"target_url": {"type": "string"}}, "required": ["target_url"]}
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "run_auth_scan",
+            "description": "Checks default credentials, auth SQL injection, and token weaknesses.",
+            "parameters": {"type": "object", "properties": {"target_url": {"type": "string"}}, "required": ["target_url"]}
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "run_idor_scan",
+            "description": "Checks for IDOR (parameter tampering) and access control flaws.",
+            "parameters": {"type": "object", "properties": {"target_url": {"type": "string"}}, "required": ["target_url"]}
         }
     }
 ]
@@ -134,29 +133,61 @@ TOOL_SCHEMAS = [
 
 TOOL_LABELS = {
     "run_exposure_check": "Exposure check   (sensitive files, API routes)",
-    "run_zap_scan":       "ZAP active scan  (SQLi, XSS, injections)",
+    "run_param_extract":  "Parameter crawl  (forms, API endpoints)",
+    "run_ssl_check":      "SSL/TLS check    (certificate health)",
+    "run_native_engine":  "Native attack    (11 vulnerability checks)",
+    "run_zap_scan":       "ZAP active scan  (deep spider, SQLi, injections)",
     "run_nikto_scan":     "Nikto scan       (server misconfigurations)",
+    "run_auth_scan":      "Auth scan        (SQLi, Default Creds)",
+    "run_idor_scan":      "IDOR scan        (Parameter Tampering)",
 }
 
 # ── Tool execution ─────────────────────────────────────────────────────────────
 
-def execute_tool(tool_name: str, target_url: str) -> list:
+def execute_tool(tool_name: str, target_url: str, auth_header: str = None, login_url: str = None, request_file: str = None, context: dict = None) -> list:
     """
     Runs the tool silently. No internal print output reaches the user.
     Returns a list of findings. Never raises.
     """
+    if context is None:
+        context = {}
+        
     try:
         if tool_name == "run_exposure_check":
-            # console=None suppresses all the per-path print statements
             return check_exposure(target_url, console=None)
+            
+        elif tool_name == "run_param_extract":
+            from src.attack.param_extractor import ParamExtractor
+            extractor = ParamExtractor(target_url)
+            res = extractor.extract()
+            context["get_params"] = res.get("get_params", [])
+            context["forms"] = res.get("forms", [])
+            return [{"info": f"Extracted {len(context['get_params'])} params and {len(context['forms'])} forms"}]
+            
+        elif tool_name == "run_native_engine":
+            from src.attack.native_engine import SentinelNativeEngine
+            engine = SentinelNativeEngine(target_url)
+            return engine.run_all(context.get("get_params", []), context.get("forms", []))
+            
+        elif tool_name == "run_ssl_check":
+            from src.plugins.builtin import ssl_check
+            # SSL check plugin is a module with a run() function, but wait, it's run.py in plugins/builtin/ssl-check/
+            # Better to use the plugin manager
+            from src.plugins.manager import run_plugin
+            return run_plugin("ssl-check", target_url, console=None)
 
         elif tool_name == "run_zap_scan":
             results = run_zap_scan_live(target_url)
             return results.get("findings", [])
 
         elif tool_name == "run_nikto_scan":
-            # console=None suppresses Nikto's internal progress prints
             return run_nikto(target_url, console=None)
+
+        elif tool_name == "run_auth_scan":
+            return run_auth_scan(target_url, login_url=login_url, request_file=request_file, console=None)
+
+        elif tool_name == "run_idor_scan":
+            return run_idor_scan(target_url, auth_header=auth_header, request_file=request_file, console=None)
 
         else:
             return [{"error": f"Unknown tool: {tool_name}"}]
@@ -177,7 +208,7 @@ def execute_tool(tool_name: str, target_url: str) -> list:
 
 class AttackBrain:
     """
-    GROQ-powered hacker orchestrator.
+    OpenRouter-powered hacker orchestrator.
 
     Usage:
         brain = AttackBrain()
@@ -187,19 +218,21 @@ class AttackBrain:
     """
 
     def __init__(self):
-        api_key = os.getenv("GROQ_API_KEY")
+        api_key = os.getenv("OPENROUTER_API_KEY")
         if not api_key:
             raise ValueError(
-                "GROQ_API_KEY not set.\n"
-                "Run: sentinel keys set groq <your-key>\n"
-                "Free key at: console.groq.com"
+                "OPENROUTER_API_KEY not set.\n"
+                "Set OPENROUTER_API_KEY in .env"
             )
-        self.client = Groq(api_key=api_key)
+        self.client = OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=api_key
+        )
 
-    def attack(self, target_url: str, console=None) -> dict:
+    def attack(self, target_url: str, mode: str = "deep", console=None, auth_header=None, login_url=None, request_file=None) -> dict:
         """
         AI-orchestrated attack loop. Clean terminal output only.
-        GROQ reasons internally — user sees phase + finding counts only.
+        AI reasons internally — user sees phase + finding counts only.
         """
         from rich.console import Console
         from rich.rule import Rule
@@ -207,8 +240,16 @@ class AttackBrain:
         # Use provided console or create one — ensures Rich markup renders
         con = console if console else Console()
 
-        con.print(f"\n[bold cyan]  Sentinel Brain[/bold cyan]  [dim]target: {target_url}[/dim]")
+        con.print(f"\n[bold cyan]  Sentinel Brain[/bold cyan]  [dim]target: {target_url} | mode: {mode}[/dim]")
         con.print(Rule(style="dim cyan"))
+        
+        # Filter available tools based on mode
+        available_tools = []
+        for schema in TOOL_SCHEMAS:
+            name = schema["function"]["name"]
+            if mode == "fast" and name in ["run_zap_scan", "run_nikto_scan", "run_auth_scan", "run_idor_scan"]:
+                continue
+            available_tools.append(schema)
 
         messages = [
             {"role": "system", "content": HACKER_PROMPT},
@@ -216,6 +257,7 @@ class AttackBrain:
                 "role": "user",
                 "content": (
                     f"Target: {target_url}\n"
+                    f"Mode: {mode}\n"
                     "Authorization granted. Begin penetration test."
                 )
             }
@@ -227,12 +269,13 @@ class AttackBrain:
         MAX_STEPS = 10
 
         # ── Intelligence loop ──────────────────────────────────────────────────
+        scan_context = {}
         for step in range(MAX_STEPS):
 
             response = self.client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model="nvidia/nemotron-3-super-120b-a12b:free",
                 messages=messages,
-                tools=TOOL_SCHEMAS,
+                tools=available_tools,
                 tool_choice="auto",
                 temperature=0.2,
                 max_completion_tokens=1024
@@ -241,7 +284,7 @@ class AttackBrain:
             msg = response.choices[0].message
             messages.append(msg)
 
-            # GROQ's reasoning is intentionally hidden from user
+            # AI's reasoning is intentionally hidden from user
             # It goes into messages for context but not to terminal
 
             if not msg.tool_calls:
@@ -266,7 +309,7 @@ class AttackBrain:
                 label = TOOL_LABELS.get(tool_name, tool_name)
                 con.print(f"\n  [cyan]▸[/cyan] {label}")
 
-                findings = execute_tool(tool_name, url)
+                findings = execute_tool(tool_name, url, auth_header=auth_header, login_url=login_url, request_file=request_file, context=scan_context)
 
                 # Separate real findings from errors
                 valid   = [f for f in findings if "error" not in f]
@@ -287,7 +330,7 @@ class AttackBrain:
                         errors_seen.add(msg_text)
                         con.print(f"    [yellow]![/yellow] {msg_text}")
 
-                # Feed result back to GROQ (truncate if huge)
+                # Feed result back to AI (truncate if huge)
                 result_str = json.dumps({
                     "findings_count": len(valid),
                     "findings": valid
@@ -321,7 +364,7 @@ class AttackBrain:
             "scan_id":        f"scan_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
             "target_url":     target_url,
             "scanned_at":     datetime.now().isoformat(),
-            "tool":           f"Sentinel Brain (GROQ + {', '.join(sorted(tools_used))})",
+            "tool":           f"Sentinel Brain (OpenRouter + {', '.join(sorted(tools_used))})",
             "total_findings": len(all_findings),
             "findings":       all_findings,
             "attack_summary": analysis,
@@ -330,7 +373,7 @@ class AttackBrain:
         return build_clean_report(raw)
 
     def _get_analysis(self, messages: list, findings: list, target_url: str) -> str:
-        """Silent GROQ call for the final plain-English summary."""
+        """Silent AI call for the final plain-English summary."""
         if not findings:
             return "No significant findings on this target."
 
@@ -349,7 +392,7 @@ class AttackBrain:
             }]
 
             resp = self.client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model=SUMMARY_MODEL,
                 messages=summary_messages,
                 temperature=0.3,
                 max_completion_tokens=300

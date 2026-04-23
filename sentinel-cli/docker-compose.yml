@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  sentinel:
+    build: .
+    container_name: sentinel-cli
+    ports:
+      - "8080:8080" # ZAP API port
+    volumes:
+      - sentinel-data:/root/.sentinel
+      # Mount the current directory into /workspace so scans can be run on local files if needed
+      - .:/workspace
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - SENTINEL_OLLAMA_HOST=${SENTINEL_OLLAMA_HOST:-http://host.docker.internal:11434}
+    # Keep the container running in the background so users can run `docker exec -it sentinel-cli sentinel`
+    command: tail -f /dev/null
+
+volumes:
+  sentinel-data:

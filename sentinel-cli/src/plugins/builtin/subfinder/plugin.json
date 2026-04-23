@@ -1,0 +1,7 @@
+{
+  "name": "subfinder",
+  "version": "1.0.0",
+  "author": "sentinel-core",
+  "description": "Subdomain enumeration via Project Discovery subfinder",
+  "binary": "subfinder"
+}

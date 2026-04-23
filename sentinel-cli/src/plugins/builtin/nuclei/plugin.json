@@ -1,0 +1,7 @@
+{
+  "name": "nuclei",
+  "version": "1.0.0",
+  "author": "sentinel-core",
+  "description": "Project Discovery Nuclei — community templates for CVEs and misconfigs",
+  "binary": "nuclei"
+}

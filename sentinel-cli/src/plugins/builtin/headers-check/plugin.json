@@ -1,0 +1,6 @@
+{
+  "name": "headers-check",
+  "version": "1.0.0",
+  "author": "sentinel-core",
+  "description": "HTTP security headers audit — CSP, HSTS, X-Frame-Options, Referrer-Policy, etc."
+}

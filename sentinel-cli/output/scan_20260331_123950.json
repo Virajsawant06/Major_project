@@ -1,0 +1,15 @@
+{
+  "scan_id": "scan_20260331_123950",
+  "target_url": "https://www.hackthissite.org/",
+  "scanned_at": "2026-03-31T12:39:50.930639",
+  "tool": "Sentinel Brain (OpenRouter + run_auth_scan, run_exposure_check, run_idor_scan, run_nikto_scan, run_zap_scan)",
+  "total_findings": 0,
+  "findings": [],
+  "attack_summary": "No significant findings on this target.",
+  "summary": {
+    "High": 0,
+    "Medium": 0,
+    "Low": 0,
+    "Informational": 0
+  }
+}
