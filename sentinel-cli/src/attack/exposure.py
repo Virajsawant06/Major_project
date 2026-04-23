@@ -164,16 +164,17 @@ def check_exposure(target_url, console=None):
     findings = []
     target_url = target_url.rstrip("/")
 
+    paths_to_check = list(SENSITIVE_PATHS)
     # Anti-False Positive Check: Does the server return 200 for EVERYTHING?
     try:
         r_test = requests.get(target_url + "/this-file-definitely-does-not-exist-999.txt", timeout=5, verify=False, allow_redirects=False)
         if r_test.status_code in [200, 301, 302]:
             log("[dim][-] Server returns 200/301 for random paths (Catch-All). Skipping static file baseline checks.[/dim]")
-            SENSITIVE_PATHS = [] # Disable the list
+            paths_to_check = [] # Disable the list cleanly
     except Exception:
         pass
 
-    for path in SENSITIVE_PATHS:
+    for path in paths_to_check:
         try:
             url = target_url + path
             r = requests.get(url, timeout=5, verify=False,

@@ -2,6 +2,7 @@ import os
 import json
 from openai import OpenAI
 from dotenv import load_dotenv
+from src.intelligence.models import PATCH_MODEL
 
 load_dotenv()
 
@@ -53,10 +54,18 @@ def generate_patches(scan_file):
     # We strip down the scan_data to send only what's necessary to Groq to save context tokens
     findings = scan_data.get("findings", [])
     # Limit to top 20 findings to avoid overwhelming prompt
-    reduced_payload = [{"vuln": f["vuln_type"], "severity": f["severity"], "desc": f["description"][:200]} for f in findings[:20]]
+    reduced_payload = []
+    for f in findings[:20]:
+        if "vuln_type" not in f:
+            continue
+        reduced_payload.append({
+            "vuln": f.get("vuln_type", "Unknown"),
+            "severity": f.get("severity", "Info"),
+            "desc": f.get("description", "")[:200]
+        })
     
     response = client.chat.completions.create(
-        model="qwen/qwen-2.5-coder-32b-instruct:free",
+        model=PATCH_MODEL,
         temperature=0.1,
         response_format={"type": "json_object"},
         messages=[

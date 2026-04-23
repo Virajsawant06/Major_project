@@ -1,0 +1,17 @@
+{
+  "name": "sentinel-security",
+  "version": "0.2.0",
+  "description": "AI-powered ethical hacking and remediation CLI",
+  "main": "bin/sentinel.js",
+  "bin": {
+    "sentinel": "bin/sentinel.js"
+  },
+  "scripts": {
+    "postinstall": "node bin/install-python-deps.js"
+  },
+  "author": "Sentinel Team",
+  "license": "MIT",
+  "dependencies": {
+    "cross-spawn": "^7.0.3"
+  }
+}

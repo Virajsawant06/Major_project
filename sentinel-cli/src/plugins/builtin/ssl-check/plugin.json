@@ -1,0 +1,7 @@
+{
+  "name": "ssl-check",
+  "version": "1.0.0",
+  "author": "sentinel-core",
+  "description": "SSL/TLS certificate analysis — expiry, weak ciphers, HSTS",
+  "requires": ["sslyze"]
+}

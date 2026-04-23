@@ -127,7 +127,14 @@ def show_summary(results):
     )
 
     console.print(table)
-    console.print(f"  [dim]Total findings: {total}[/dim]")
+    
+    if total == 0:
+        console.print("  [bold green]✓ No vulnerabilities confirmed.[/bold green]")
+        console.print("  [dim]This does not guarantee the target is 100% secure.[/dim]")
+        console.print("  [dim]Consider running with --mode deep for a full analysis.[/dim]")
+    else:
+        console.print(f"  [dim]Total findings: {total}[/dim]")
+        
     console.print()
 
 def show_findings(results):

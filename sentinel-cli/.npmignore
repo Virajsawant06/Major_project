@@ -1,0 +1,21 @@
+# Ignore local development files
+.env
+.sentinel
+.git
+.gitignore
+__pycache__
+*.pyc
+sentinel.egg-info
+sentinel_security.egg-info
+dist
+build
+node_modules
+*.tgz
+
+# Ignore scan data
+scans/
+logs/
+output/
+temp/
+findings.json
+patches.json

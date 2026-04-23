@@ -112,6 +112,9 @@ def run_zap_scan_live(
     time.sleep(2)
     reported_findings = set()
 
+    MAX_ACTIVE_SCAN_SECONDS = 600  # 10 minutes hard cap
+    active_start_time = time.time()
+
     while True:
         status = int(zap_get("ascan/view/status", {"scanId": ascan_id})["status"])
         if on_active_progress:
@@ -135,6 +138,16 @@ def run_zap_scan_live(
 
         if status >= 100:
             break
+            
+        if time.time() - active_start_time > MAX_ACTIVE_SCAN_SECONDS:
+            try:
+                zap_get("ascan/action/stopScan", {"scanId": ascan_id})
+            except Exception:
+                pass
+            if on_active_done:
+                on_active_done()
+            break
+            
         time.sleep(10)
 
     if on_active_done:
