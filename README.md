@@ -16,6 +16,8 @@
   <img src="https://img.shields.io/badge/license-MIT-yellow?style=for-the-badge" />
 </p>
 
+<h3>🚀 <a href="https://sentinel-live-preview.netlify.app/">Live Platform Preview</a></h3>
+
 <p>
   <a href="#sentinel-cli"><strong>CLI →</strong></a> ·
   <a href="#sentinel-web-shieldsentinel"><strong>Web →</strong></a> ·
