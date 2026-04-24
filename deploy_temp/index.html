@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sentinel CLI — AI-Powered Security Scanner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="loading">
+  <div class="scanline"></div>
+  <div id="interactive-glow"></div>
+
+  <!-- ─── MINI COMMAND CENTER (Floating Nav) ─── -->
+  <div id="command-center">
+    <div class="cc-inner">
+      <div class="cc-links">
+        <a href="#process">Process</a>
+        <a href="#features">Features</a>
+        <a href="docs.html">Documentation</a>
+        <a href="#install" class="cc-btn-primary">Install</a>
+      </div>
+      <div class="cc-logo">
+        <img src="hexagon_loader_dark.svg" alt="Sentinel" width="22" height="22">
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ LOADER ═══ -->
+  <div id="loader">
+    <div class="loader-grid"></div>
+    <div class="loader-bracket tl"></div>
+    <div class="loader-bracket tr"></div>
+    <div class="loader-bracket bl"></div>
+    <div class="loader-bracket br"></div>
+    
+    <div class="loader-stage">
+      <div class="loader-hex">
+        <svg viewBox="0 0 164 188" width="100%" height="100%" style="overflow:visible">
+          <defs>
+            <radialGradient id="rg" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#00D1FF" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="#060910" stop-opacity="1"/>
+            </radialGradient>
+            <radialGradient id="glow2" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#ffffff" stop-opacity="0.7"/>
+              <stop offset="30%" stop-color="#00D1FF" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#00D1FF" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <polygon fill="#00D1FF" opacity="0.05" points="82 0 164 47 164 141 82 188 0 141 0 47 82 0"/>
+          <polygon fill="#00D1FF" opacity="0.08" points="82 8 158 53 158 133 82 178 6 133 6 53 82 8"/>
+          <polygon fill="#0a0e15" points="82 14 154 56 154 140 82 182 10 140 10 56 82 14"/>
+          <polygon fill="url(#rg)" points="82 14 154 56 154 140 82 182 10 140 10 56 82 14"/>
+          <polygon fill="url(#glow2)" points="82 14 154 56 154 140 82 182 10 140 10 56 82 14" style="animation: breathe 2.4s ease-in-out infinite;"/>
+          <polygon fill="none" stroke="#00D1FF" stroke-width="1" opacity="0.3" points="82 20 148 60 148 136 82 176 16 136 16 60 82 20"/>
+          <polygon fill="#121824" stroke="#a0f0ff" stroke-width="1" opacity="0.35" points="82 28 142 65 142 131 82 168 22 131 22 65 82 28"/>
+          <polygon fill="none" stroke="#00D1FF" stroke-width="2.5" points="82 14 154 56 154 140 82 182 10 140 10 56 82 14" style="animation: outerPulse 2.4s ease-in-out infinite;"/>
+          <polygon fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-dasharray="50 420" stroke-dashoffset="0" points="82 14 154 56 154 140 82 182 10 140 10 56 82 14" style="animation: traceWhite 2.4s cubic-bezier(0.4,0,0.2,1) infinite; opacity:0;"/>
+          <polygon fill="none" stroke="#00D1FF" stroke-width="6" stroke-linecap="round" stroke-dasharray="80 390" stroke-dashoffset="0" points="82 14 154 56 154 140 82 182 10 140 10 56 82 14" style="animation: trace 2.4s cubic-bezier(0.4,0,0.2,1) infinite; opacity:0;"/>
+          <polygon fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="50 420" stroke-dashoffset="-50" points="82 14 154 56 154 140 82 182 10 140 10 56 82 14" style="animation: trace2 2.4s cubic-bezier(0.4,0,0.2,1) infinite; opacity:0;"/>
+          
+          <!-- Corner Accents -->
+          <g style="animation: cornerfade 2.4s ease-in-out infinite; animation-delay:0s">
+            <line fill="none" stroke-width="2.5" stroke-linecap="round" x1="82" y1="12" x2="68" y2="20"/>
+            <line fill="none" stroke-width="2.5" stroke-linecap="round" x1="82" y1="12" x2="96" y2="20"/>
+          </g>
+          <g style="animation: cornerfade 2.4s ease-in-out infinite; animation-delay:0.4s">
+            <line fill="none" stroke-width="2.5" stroke-linecap="round" x1="154" y1="56" x2="154" y2="68"/>
+            <line fill="none" stroke-width="2.5" stroke-linecap="round" x1="154" y1="56" x2="142" y2="49"/>
+          </g>
+          <g style="animation: cornerfade 2.4s ease-in-out infinite; animation-delay:0.8s">
+            <line fill="none" stroke-width="2.5" stroke-linecap="round" x1="154" y1="140" x2="154" y2="128"/>
+            <line fill="none" stroke-width="2.5" stroke-linecap="round" x1="154" y1="140" x2="142" y2="147"/>
+          </g>
+          <g style="animation: cornerfade 2.4s ease-in-out infinite; animation-delay:1.2s">
+            <line fill="none" stroke-width="2.5" stroke-linecap="round" x1="82" y1="184" x2="68" y2="176"/>
+            <line fill="none" stroke-width="2.5" stroke-linecap="round" x1="82" y1="184" x2="96" y2="176"/>
+          </g>
+          <g style="animation: cornerfade 2.4s ease-in-out infinite; animation-delay:1.6s">
+            <line fill="none" stroke-width="2.5" stroke-linecap="round" x1="10" y1="140" x2="10" y2="128"/>
+            <line fill="none" stroke-width="2.5" stroke-linecap="round" x1="10" y1="140" x2="22" y2="147"/>
+          </g>
+          <g style="animation: cornerfade 2.4s ease-in-out infinite; animation-delay:2.0s">
+            <line fill="none" stroke-width="2.5" stroke-linecap="round" x1="10" y1="56" x2="10" y2="68"/>
+            <line fill="none" stroke-width="2.5" stroke-linecap="round" x1="10" y1="56" x2="22" y2="49"/>
+          </g>
+          <circle fill="#ffffff" cx="82"  cy="14"  style="animation: blink 2.4s ease-in-out infinite; animation-delay:0s;   opacity:0.2" r="2"/>
+          <circle fill="#ffffff" cx="154" cy="56"  style="animation: blink 2.4s ease-in-out infinite; animation-delay:0.4s; opacity:0.2" r="2"/>
+          <circle fill="#ffffff" cx="154" cy="140" style="animation: blink 2.4s ease-in-out infinite; animation-delay:0.8s; opacity:0.2" r="2"/>
+          <circle fill="#ffffff" cx="82"  cy="182" style="animation: blink 2.4s ease-in-out infinite; animation-delay:1.2s; opacity:0.2" r="2"/>
+          <circle fill="#ffffff" cx="10"  cy="140" style="animation: blink 2.4s ease-in-out infinite; animation-delay:1.6s; opacity:0.2" r="2"/>
+          <circle fill="#ffffff" cx="10"  cy="56"  style="animation: blink 2.4s ease-in-out infinite; animation-delay:2.0s; opacity:0.2" r="2"/>
+        </svg>
+      </div>
+
+      <!-- wordmark -->
+      <div class="loader-wordmark">
+        <div class="wordmark-name">SENTINEL</div>
+        <div class="wordmark-sub">ADVANCED THREAT INTELLIGENCE PLATFORM</div>
+      </div>
+
+      <!-- divider -->
+      <div class="loader-divider">
+        <div class="ld-line"></div>
+        <div class="ld-diamond"></div>
+        <div class="ld-line right"></div>
+      </div>
+      <div class="loader-status-text" id="statusText">INITIALIZING CORE SYSTEMS...</div>
+      <div class="loader-progress-wrap">
+        <div class="loader-progress-track">
+          <div class="loader-progress-fill" id="progressFill"></div>
+        </div>
+        <div class="loader-progress-labels">
+          <span id="progressLabel">BOOT SEQUENCE</span>
+          <span class="loader-pct" id="progressPct">0%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- bottom readout -->
+    <div class="loader-readout">
+      <span class="readout-line"><span class="label">NODE &nbsp;&nbsp;&nbsp;</span> SYS-ALPHA-07</span>
+      <span class="readout-line"><span class="label">UPLINK &nbsp;</span> 128-BIT ENCRYPTED</span>
+      <span class="readout-line"><span class="label">STATUS &nbsp;</span> <span id="readoutStatus">STANDBY</span></span>
+    </div>
+
+    <div class="loader-version">
+      <span style="display:block">BUILD 4.2.1-RC</span>
+      <span style="display:block">2026.04.24</span>
+    </div>
+  </div>
+
+  <!-- ═══ CURSOR ═══ -->
+  <!-- ═══ NAVBAR ═══ -->
+  <nav class="nav-outer" id="navbar">
+    <div class="navbar">
+      <a href="#" class="nav-logo">
+        <img src="hexagon_loader_dark.svg" alt="Sentinel Logo" width="32" height="32" style="filter: drop-shadow(0 0 8px rgba(0,209,255,0.4))">
+        <span class="logo-text">SENTINEL</span>
+      </a>
+      <div class="nav-links">
+        <a href="index.html#process">Process</a>
+        <a href="index.html#features">Features</a>
+        <a href="docs.html">Documentation</a>
+        <a href="index.html#install">Install</a>
+      </div>
+      <div class="nav-actions">
+        <a href="https://github.com/Virajsawant06/Major_project" target="_blank" class="btn-github">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
+        <a href="#install" class="btn-primary squircle-pill">Get Started</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══ HERO ═══ -->
+  <section class="hero" id="hero">
+    <canvas id="hero-canvas"></canvas>
+
+    <!-- Parallax Fragments -->
+    <div class="p-frag f1" data-speed="0.5">
+      <svg width="60" height="60" viewBox="0 0 100 100"><rect x="10" y="10" width="80" height="80" stroke="var(--primary)" stroke-width="1" fill="none" opacity="0.2"/></svg>
+    </div>
+    <div class="p-frag f2" data-speed="0.2">
+      <svg width="40" height="40" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" stroke="var(--primary-glow)" stroke-width="0.5" fill="none" opacity="0.1"/></svg>
+    </div>
+    <div class="p-frag f3" data-speed="0.8">
+      <svg width="80" height="80" viewBox="0 0 100 100"><path d="M10 10 L90 10 L90 90 L10 90 Z" stroke="var(--primary)" stroke-width="0.5" fill="none" opacity="0.15"/></svg>
+    </div>
+
+    <div class="hero-inner">
+      <div class="hero-badge hero-anim" data-delay="0">
+        <span class="badge-pulse"></span>
+        v0.2.0 — Production Ready
+      </div>
+      <h1 class="hero-h1">
+        <span class="word-wrap hero-anim" data-delay="1"><span class="word">Security</span></span>
+        <span class="word-wrap hero-anim" data-delay="2"><span class="word">Scanning.</span></span>
+        <br>
+        <span class="word-wrap hero-anim" data-delay="3"><span class="word grad">AI-Powered</span></span>
+        <span class="word-wrap hero-anim" data-delay="4"><span class="word grad">Fixes.</span></span>
+        <br>
+        <span class="word-wrap hero-anim" data-delay="5"><span class="word dim-word">Under</span></span>
+        <span class="word-wrap hero-anim" data-delay="6"><span class="word dim-word">90</span></span>
+        <span class="word-wrap hero-anim" data-delay="7"><span class="word dim-word">Seconds.</span></span>
+      </h1>
+      <p class="hero-sub hero-anim" data-delay="8">
+        Sentinel orchestrates ZAP, Nuclei &amp; 100+ AI models to scan,<br>
+        triage, and auto-patch your vulnerabilities — one command.
+      </p>
+      <div class="hero-ctas hero-anim" data-delay="9">
+        <div class="install-pill">
+          <span class="install-dollar">$</span>
+          <code>npm install -g sentinel-security</code>
+          <button class="btn-copy squircle" id="copy-btn" onclick="copyCli()">Copy</button>
+        </div>
+        <a href="#process" class="btn-ghost squircle">How it works ↓</a>
+      </div>
+    </div>
+    <div class="scroll-cue"><div class="scroll-line-anim"></div><span>Scroll</span></div>
+  </section>
+
+  <!-- ═══ STATS ═══ -->
+  <div class="stats-strip">
+    <div class="stats-inner">
+      <div class="stat-item reveal"><span class="sval" data-target="90">0</span><span class="sunit">s</span><div class="slabel">Avg Scan</div></div>
+      <div class="stat-sep"></div>
+      <div class="stat-item reveal"><span class="sval" data-target="11">0</span><span class="sunit">+</span><div class="slabel">Security Checks</div></div>
+      <div class="stat-sep"></div>
+      <div class="stat-item reveal"><span class="sval" data-target="100">0</span><span class="sunit">+</span><div class="slabel">AI Models</div></div>
+      <div class="stat-sep"></div>
+      <div class="stat-item reveal"><span class="sval sval-text">MIT</span><div class="slabel">Open Source</div></div>
+    </div>
+  </div>
+
+  <!-- ═══ PROCESS — Neon-style sticky scroll ═══ -->
+  <section class="process-outer" id="process">
+    <div class="section-glow glow-1"></div>
+    <div class="section-glow glow-2"></div>
+    <div class="process-sticky">
+      <div class="process-left">
+        <div class="section-eyebrow reveal">Process</div>
+        <h2 class="process-h2">
+          <span class="process-step-text active" data-step="0">Scan every endpoint.<br><span class="grad">Thoroughly.</span></span>
+          <span class="process-step-text" data-step="1">Analyze with<br><span class="grad">AI triage.</span></span>
+          <span class="process-step-text" data-step="2">Generate<br><span class="grad">AI patches.</span></span>
+          <span class="process-step-text" data-step="3">Report &amp;<br><span class="grad">compare.</span></span>
+        </h2>
+        <div class="process-steps-nav">
+          <div class="ps-nav-item active" data-step="0">
+            <span class="ps-num">01</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ps-icon"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <span class="ps-name">Scan</span>
+          </div>
+          <div class="ps-nav-item" data-step="1">
+            <span class="ps-num">02</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ps-icon"><path d="M12 20v-6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v6"/><path d="M6 20v-4"/><path d="M10 20v-8"/><path d="M18 20V10"/><path d="M22 20V4"/><path d="m16 20 2-2 2 2"/></svg>
+            <span class="ps-name">Analyze</span>
+          </div>
+          <div class="ps-nav-item" data-step="2">
+            <span class="ps-num">03</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ps-icon"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+            <span class="ps-name">Patch</span>
+          </div>
+          <div class="ps-nav-item" data-step="3">
+            <span class="ps-num">04</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ps-icon"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span class="ps-name">Report</span>
+          </div>
+        </div>
+        <!-- Cursor follower for this section only -->
+        <div id="process-cursor-guide" class="glass-pill-guide">SCROLL</div>
+      </div>
+      <div class="process-right">
+        <!-- Step 0: Scan Card -->
+        <div class="process-card glass-card active" data-step="0">
+          <div class="pc-bar"><span class="pdot r"></span><span class="pdot y"></span><span class="pdot g"></span><span class="pc-title">sentinel — scanning</span></div>
+          <div class="pc-body">
+            <div class="pc-cmd">$ sentinel scan --url https://acme.io --deep</div>
+            <div class="pc-line pc-l1"><span class="blue">▶</span> Initializing ZAP daemon...</div>
+            <div class="scan-bar-wrap"><div class="scan-bar-fill"></div></div>
+            <div class="pc-line pc-l2">  Crawling endpoints <span class="blue" id="ep-count">0</span> found</div>
+            <div class="pc-line pc-l3">  Nuclei templates loaded <span class="green">✓</span></div>
+            <div class="pc-line pc-l4">  Active scan in progress<span class="cursor-blink"></span></div>
+            <div class="pc-progress">
+              <div class="pc-prog-row"><span class="muted">Progress</span><span class="blue" id="scan-pct">0%</span></div>
+              <div class="pc-prog-bar"><div class="pc-prog-fill" id="scan-bar"></div></div>
+            </div>
+          </div>
+        </div>
+        <!-- Step 1: Analyze Card -->
+        <div class="process-card glass-card" data-step="1">
+          <div class="pc-bar"><span class="pdot r"></span><span class="pdot y"></span><span class="pdot g"></span><span class="pc-title">sentinel — ai triage</span></div>
+          <div class="pc-body">
+            <div class="pc-cmd">$ sentinel analyze --model deepseek/deepseek-r1</div>
+            <div class="ai-finding-list">
+              <div class="ai-finding aif-0"><span class="sev-dot critical"></span><span class="aif-name">CVE-2024-4577 PHP RCE</span><div class="aif-bar-wrap"><div class="aif-bar" style="--w:95%;--c:#ff5f57"></div></div><span class="aif-score red">9.8</span></div>
+              <div class="ai-finding aif-1"><span class="sev-dot critical"></span><span class="aif-name">CVE-2024-1086 Kernel UAF</span><div class="aif-bar-wrap"><div class="aif-bar" style="--w:91%;--c:#ff5f57"></div></div><span class="aif-score red">9.1</span></div>
+              <div class="ai-finding aif-2"><span class="sev-dot high"></span><span class="aif-name">CVE-2023-44487 HTTP DoS</span><div class="aif-bar-wrap"><div class="aif-bar" style="--w:75%;--c:#febc2e"></div></div><span class="aif-score yellow">7.5</span></div>
+              <div class="ai-finding aif-3"><span class="sev-dot high"></span><span class="aif-name">CVE-2023-38545 cURL OOB</span><div class="aif-bar-wrap"><div class="aif-bar" style="--w:70%;--c:#febc2e"></div></div><span class="aif-score yellow">7.0</span></div>
+              <div class="ai-finding aif-4"><span class="sev-dot med"></span><span class="aif-name">CVE-2024-2961 glibc OOB</span><div class="aif-bar-wrap"><div class="aif-bar" style="--w:45%;--c:#00A8FF"></div></div><span class="aif-score blue">4.5</span></div>
+            </div>
+          </div>
+        </div>
+        <!-- Step 2: Patch Card -->
+        <div class="process-card glass-card" data-step="2">
+          <div class="pc-bar"><span class="pdot r"></span><span class="pdot y"></span><span class="pdot g"></span><span class="pc-title">sentinel — ai patch engine</span></div>
+          <div class="pc-body">
+            <div class="pc-cmd">$ sentinel patches --apply --cve CVE-2024-4577</div>
+            <div class="patch-model-tag"><span class="blue">✦</span> deepseek/deepseek-r1 — PHP RCE mitigation</div>
+            <div class="diff-block">
+              <div class="diff-line diff-ctx"># php.ini — disable dangerous functions</div>
+              <div class="diff-line diff-rem">- disable_functions =</div>
+              <div class="diff-line diff-add">+ disable_functions = exec,passthru,shell_exec,system</div>
+              <div class="diff-line diff-add">+ allow_url_include = Off</div>
+              <div class="diff-line diff-add">+ expose_php = Off</div>
+            </div>
+            <div class="patch-steps">
+              <div class="ps-row"><span class="ps-dot done"></span><span class="muted">Generate patch</span><span class="green ps-check">✓</span></div>
+              <div class="ps-row"><span class="ps-dot done"></span><span class="muted">Validate syntax</span><span class="green ps-check">✓</span></div>
+              <div class="ps-row ps-active-row"><span class="ps-dot active-dot"></span><span class="muted">Apply to target</span><span class="blue" id="patch-pct">0%</span></div>
+            </div>
+          </div>
+        </div>
+        <!-- Step 3: Report Card -->
+        <div class="process-card glass-card" data-step="3">
+          <div class="pc-bar"><span class="pdot r"></span><span class="pdot y"></span><span class="pdot g"></span><span class="pc-title">sentinel — report</span></div>
+          <div class="pc-body">
+            <div class="pc-cmd">$ sentinel history --latest</div>
+            <div class="report-grid">
+              <div class="report-stat"><div class="rs-val red" id="rvc1">0</div><div class="rs-label">Critical</div></div>
+              <div class="report-stat"><div class="rs-val yellow" id="rvc2">0</div><div class="rs-label">High</div></div>
+              <div class="report-stat"><div class="rs-val blue" id="rvc3">0</div><div class="rs-label">Medium</div></div>
+              <div class="report-stat"><div class="rs-val muted" id="rvc4">0</div><div class="rs-label">Low</div></div>
+            </div>
+            <div class="report-files">
+              <div class="rf-item"><span class="blue">◉</span> scan_2026-04-24.json <span class="green">saved</span></div>
+              <div class="rf-item"><span class="blue">◉</span> report_2026-04-24.md <span class="green">saved</span></div>
+            </div>
+            <div class="report-success">✓ All systems patched — scan complete</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FEATURES ═══ -->
+  <section class="section" id="features">
+    <div class="section-glow glow-3"></div>
+    <div class="section-inner">
+      <div class="section-eyebrow reveal">Features</div>
+      <h2 class="section-h2 reveal">Built for serious<br>security engineers.</h2>
+      <div class="feat-grid">
+        <div class="feat-block reveal">
+          <div class="feat-text">
+            <div class="feat-tag">Core Scanner</div>
+            <h3 class="feat-h3">Multi-Engine<br>Vulnerability Detection</h3>
+            <p class="feat-p">Orchestrates OWASP ZAP active/passive scans with Nuclei templates. Covers SQLi, XSS, SSRF, RCE, IDOR, misconfigurations, outdated headers and CVEs — concurrently.</p>
+            <ul class="feat-list">
+              <li>OWASP Top 10 full coverage</li>
+              <li>CVE database cross-referencing</li>
+              <li>Scan depth presets: quick, standard, deep</li>
+            </ul>
+          </div>
+          <div class="feat-visual">
+            <div class="term-card glass-card">
+              <div class="pc-bar"><span class="pdot r"></span><span class="pdot y"></span><span class="pdot g"></span><span class="pc-title">sentinel scan</span></div>
+              <div class="pc-body">
+                <div class="pc-cmd">$ sentinel scan --url https://acme.io --deep</div>
+                <div class="scan-bar-wrap"><div class="scan-bar-fill"></div></div>
+                <div class="pc-line"><span class="blue">▶</span> Crawling <span class="blue">247</span> endpoints</div>
+                <div class="pc-line"><span class="muted">Running CVE checks</span> <span class="green">✓</span></div>
+                <div class="pc-line"><span class="muted">AI triage</span><span class="cursor-blink"></span></div>
+                <div class="pc-progress" style="margin-top:12px">
+                  <div class="pc-prog-row"><span class="muted">Progress</span><span class="blue">73%</span></div>
+                  <div class="pc-prog-bar"><div class="pc-prog-fill" style="width:73%"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="feat-block feat-rev reveal">
+          <div class="feat-text">
+            <div class="feat-tag">AI Intelligence</div>
+            <h3 class="feat-h3">100+ Models.<br>Zero Config.</h3>
+            <p class="feat-p">Powered by OpenRouter — switch between GPT-4o, Claude, Gemini, Llama or local Ollama via a single env variable. No API juggling required.</p>
+            <ul class="feat-list">
+              <li>OpenRouter integration built-in</li>
+              <li>Local Ollama for air-gapped environments</li>
+              <li>Interactive <code class="inline-code">sentinel chat</code> mode</li>
+            </ul>
+          </div>
+          <div class="feat-visual">
+            <div class="term-card glass-card">
+              <div class="pc-bar"><span class="pdot r"></span><span class="pdot y"></span><span class="pdot g"></span><span class="pc-title">sentinel patches</span></div>
+              <div class="pc-body">
+                <div class="pc-cmd">$ sentinel patches --cve CVE-2024-4577</div>
+                <div class="patch-model-tag"><span class="blue">✦</span> deepseek/deepseek-r1</div>
+                <div class="diff-block">
+                  <div class="diff-line diff-rem">- disable_functions =</div>
+                  <div class="diff-line diff-add">+ disable_functions = exec,passthru</div>
+                  <div class="diff-line diff-add">+ expose_php = Off</div>
+                </div>
+                <div class="pc-progress" style="margin-top:10px">
+                  <div class="pc-prog-row"><span class="muted">Applying patch</span><span class="green">✓ Done</span></div>
+                  <div class="pc-prog-bar"><div class="pc-prog-fill" style="width:100%;background:var(--success)"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ INSTALL ═══ -->
+  <section class="section section-alt" id="install">
+    <div class="section-inner">
+      <div class="section-eyebrow reveal">Install</div>
+      <h2 class="section-h2 reveal">One command.<br>Three environments.</h2>
+      <div class="install-grid">
+        <div class="install-card glass-card reveal">
+          <div class="ic-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+          </div>
+          <div class="ic-title">NPM Global</div>
+          <p class="ic-desc">Recommended for development & CI environments.</p>
+          <div class="code-chip"><code>npm install -g sentinel-security</code><button onclick="navigator.clipboard.writeText('npm install -g sentinel-security')">Copy</button></div>
+        </div>
+        <div class="install-card glass-card reveal">
+          <div class="ic-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12.5V17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9.5C2 7 4 5 6.5 5H10c.22.29.45.58.71.85C11.61 6.7 12.72 7 14 7h3.5c2.5 0 4.5 2 4.5 4.5V12"/><path d="M11 13H5"/><path d="M11 17H5"/><path d="M11 9H5"/><path d="M15 13h4"/><path d="M15 17h4"/></svg>
+          </div>
+          <div class="ic-title">Docker</div>
+          <p class="ic-desc">Containerized deployment with full environment isolation.</p>
+          <div class="code-chip"><code>docker pull virajsawant06/sentinel</code><button onclick="navigator.clipboard.writeText('docker pull virajsawant06/sentinel')">Copy</button></div>
+        </div>
+        <div class="install-card glass-card reveal">
+          <div class="ic-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+          </div>
+          <div class="ic-title">From Source</div>
+          <p class="ic-desc">Direct access to the core engine and custom plugins.</p>
+          <div class="code-chip"><code>git clone github.com/Virajsawant06/Major_project</code><button onclick="navigator.clipboard.writeText('git clone https://github.com/Virajsawant06/Major_project')">Copy</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="footer-logo">SENTINEL</div>
+        <p class="footer-tag">Security Scanning. AI-Powered Fixes.</p>
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/Virajsawant06/Major_project">GitHub</a>
+        <a href="#process">Docs</a>
+        <a href="#install">Install</a>
+      </div>
+      <div class="footer-copy">© 2026 Sentinel CLI &nbsp;·&nbsp; MIT License</div>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="bg.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
