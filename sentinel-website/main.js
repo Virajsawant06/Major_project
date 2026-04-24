@@ -300,3 +300,22 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
     if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
   });
 });
+
+// ─── Process Section Cursor Guide ─────────────────
+const processSection = document.getElementById('process');
+const cursorGuide = document.getElementById('process-cursor-guide');
+
+if (processSection && cursorGuide) {
+  processSection.addEventListener('mousemove', e => {
+    cursorGuide.style.left = e.clientX + 'px';
+    cursorGuide.style.top = e.clientY + 'px';
+  });
+
+  processSection.addEventListener('mouseenter', () => {
+    cursorGuide.classList.add('active');
+  });
+
+  processSection.addEventListener('mouseleave', () => {
+    cursorGuide.classList.remove('active');
+  });
+}
