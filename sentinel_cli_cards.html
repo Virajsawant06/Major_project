@@ -1,0 +1,283 @@
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Mono:wght@400;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0a}
+.wrap{background:#0a0a0a;padding:32px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;font-family:'JetBrains Mono','Space Mono',monospace}
+
+/* MAC WINDOW CHROME */
+.card{background:#111;border:1px solid #1e2a1e;border-radius:10px;overflow:hidden;transition:transform 0.3s,box-shadow 0.3s;cursor:default}
+.card:hover{transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,215,170,0.12)}
+.titlebar{background:#1a1a1a;padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #222}
+.dot{width:12px;height:12px;border-radius:50%}
+.dot.r{background:#ff5f57}
+.dot.y{background:#febc2e}
+.dot.g{background:#28c840}
+.tab-title{flex:1;text-align:center;font-size:11px;color:#555;letter-spacing:0.05em}
+.body{padding:20px;background:#0d0d0d}
+
+/* TERMINAL TEXT STYLES */
+.prompt{color:#00d7aa;font-size:12px}
+.prompt .model{color:#555}
+.cmd{color:#fff;font-size:12px}
+.comment{color:#3a5a3a;font-size:11px}
+.out{color:#ccc;font-size:11px;line-height:1.7}
+.teal{color:#00d7aa}
+.green{color:#28c840}
+.yellow{color:#febc2e}
+.red{color:#ff5f57}
+.dim{color:#444}
+.bold{font-weight:700}
+.mono{font-family:'JetBrains Mono',monospace}
+
+/* BLINKING CURSOR */
+.cursor{display:inline-block;width:7px;height:13px;background:#00d7aa;animation:blink 1.1s step-end infinite;vertical-align:middle;margin-left:2px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* PROGRESS BAR */
+.bar-wrap{margin:8px 0;background:#1a1a1a;border-radius:2px;height:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:2px;animation:fillbar 2.5s ease forwards}
+@keyframes fillbar{from{width:0}to{width:var(--w)}}
+
+/* SCAN PULSE */
+.scan-line{height:2px;background:linear-gradient(90deg,transparent,#00d7aa,transparent);animation:sweep 2s linear infinite;position:relative}
+@keyframes sweep{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.scan-wrap{overflow:hidden;height:2px;background:#111;margin:10px 0}
+
+/* TYPING ANIMATION */
+.type-1{overflow:hidden;white-space:nowrap;animation:type1 1s steps(30) 0.3s both}
+.type-2{overflow:hidden;white-space:nowrap;animation:type1 1s steps(30) 1.1s both}
+.type-3{overflow:hidden;white-space:nowrap;animation:type1 0.8s steps(25) 2s both}
+.type-4{overflow:hidden;white-space:nowrap;animation:type1 0.6s steps(20) 2.7s both}
+.type-5{overflow:hidden;white-space:nowrap;animation:type1 0.6s steps(20) 3.2s both}
+@keyframes type1{from{width:0}to{width:100%}}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:5px;border:1px solid #1e3a2a;border-radius:4px;padding:2px 8px;font-size:10px;color:#00d7aa;background:#0a1a12}
+.badge-dot{width:5px;height:5px;border-radius:50%;background:#00d7aa;animation:blink 1.6s ease-in-out infinite}
+
+/* VULN TABLE */
+.vtable{width:100%;border-collapse:collapse;font-size:10px;margin-top:8px}
+.vtable td{padding:5px 8px;border-bottom:1px solid #1a1a1a}
+.vtable tr:last-child td{border:none}
+.vtable .sev{border-radius:3px;padding:2px 6px;font-size:9px;font-weight:700}
+.sev.critical{background:#2a0a0a;color:#ff5f57;border:1px solid #3a1010}
+.sev.high{background:#2a1a00;color:#febc2e;border:1px solid #3a2800}
+.sev.medium{background:#1a2a10;color:#28c840;border:1px solid #1e3a18}
+
+/* PULSING GLOW */
+@keyframes glow{0%,100%{box-shadow:0 0 8px rgba(0,215,170,0.2)}50%{box-shadow:0 0 18px rgba(0,215,170,0.5)}}
+.glow{animation:glow 2.5s ease-in-out infinite}
+
+/* FADE IN ROWS */
+.fade-row{opacity:0;animation:faderow 0.4s ease forwards}
+.fade-row:nth-child(1){animation-delay:0.2s}
+.fade-row:nth-child(2){animation-delay:0.5s}
+.fade-row:nth-child(3){animation-delay:0.8s}
+.fade-row:nth-child(4){animation-delay:1.1s}
+.fade-row:nth-child(5){animation-delay:1.4s}
+@keyframes faderow{to{opacity:1}}
+
+/* COUNT UP */
+.count{animation:none}
+</style>
+
+<div class="wrap">
+
+<!-- CARD 1: SCAN RUNNING -->
+<div class="card glow">
+  <div class="titlebar">
+    <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+    <div class="tab-title">sentinel — scan running</div>
+  </div>
+  <div class="body">
+    <div style="margin-bottom:14px">
+      <div style="font-size:9px;color:#333;letter-spacing:0.1em;margin-bottom:6px">ACTIVE SCAN</div>
+      <div class="badge"><span class="badge-dot"></span>SCANNING TARGET</div>
+    </div>
+    <div class="type-1" style="font-size:11px;color:#555">$ sentinel scan --url https://acme.io --deep</div>
+    <div style="height:10px"></div>
+    <div class="type-2 teal" style="font-size:11px">▶ Initializing deep scan engine...</div>
+    <div class="scan-wrap"><div class="scan-line"></div></div>
+    <div class="type-3" style="font-size:11px;color:#ccc">  Crawling endpoints <span class="teal">247</span> found</div>
+    <div class="type-4" style="font-size:11px;color:#ccc">  Running CVE checks  <span class="green">✓</span></div>
+    <div class="type-5" style="font-size:11px;color:#ccc">  AI triage in progress<span class="cursor"></span></div>
+    <div style="margin-top:14px">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:#444;margin-bottom:4px">
+        <span>Progress</span><span class="teal" id="pct1">73%</span>
+      </div>
+      <div class="bar-wrap"><div class="bar-fill" style="--w:73%;background:linear-gradient(90deg,#00d7aa,#37b9ff)"></div></div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:16px">
+      <div style="font-size:10px;color:#444">Elapsed <span style="color:#fff">00:42</span></div>
+      <div style="font-size:10px;color:#444">ETA <span style="color:#00d7aa">~00:15</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CARD 2: VULNERABILITIES FOUND -->
+<div class="card">
+  <div class="titlebar">
+    <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+    <div class="tab-title">sentinel — scan results</div>
+  </div>
+  <div class="body">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:9px;color:#333;letter-spacing:0.1em">VULNERABILITIES FOUND</div>
+      <div class="badge">acme.io</div>
+    </div>
+    <div style="display:flex;gap:16px;margin-bottom:14px">
+      <div style="text-align:center">
+        <div style="font-size:26px;font-weight:700;color:#ff5f57" id="c1">0</div>
+        <div style="font-size:9px;color:#555;margin-top:2px">CRITICAL</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:26px;font-weight:700;color:#febc2e" id="c2">0</div>
+        <div style="font-size:9px;color:#555;margin-top:2px">HIGH</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:26px;font-weight:700;color:#28c840" id="c3">0</div>
+        <div style="font-size:9px;color:#555;margin-top:2px">MEDIUM</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:26px;font-weight:700;color:#444" id="c4">0</div>
+        <div style="font-size:9px;color:#555;margin-top:2px">LOW</div>
+      </div>
+    </div>
+    <table class="vtable">
+      <tr class="fade-row"><td class="teal">CVE-2024-4577</td><td style="color:#888">PHP RCE</td><td><span class="sev critical">CRITICAL</span></td></tr>
+      <tr class="fade-row"><td class="teal">CVE-2024-1086</td><td style="color:#888">Kernel UAF</td><td><span class="sev critical">CRITICAL</span></td></tr>
+      <tr class="fade-row"><td class="teal">CVE-2023-44487</td><td style="color:#888">HTTP/2 DoS</td><td><span class="sev high">HIGH</span></td></tr>
+      <tr class="fade-row"><td class="teal">CVE-2023-38545</td><td style="color:#888">cURL Overflow</td><td><span class="sev high">HIGH</span></td></tr>
+      <tr class="fade-row"><td class="teal">CVE-2024-2961</td><td style="color:#888">glibc OOB</td><td><span class="sev medium">MEDIUM</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- CARD 3: AI PATCH -->
+<div class="card">
+  <div class="titlebar">
+    <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+    <div class="tab-title">sentinel — ai patches</div>
+  </div>
+  <div class="body">
+    <div style="font-size:9px;color:#333;letter-spacing:0.1em;margin-bottom:10px">AI PATCH ENGINE</div>
+    <div style="font-size:11px;color:#555;margin-bottom:10px">$ sentinel patches --apply --cve CVE-2024-4577</div>
+    <div style="background:#0a1a0a;border:1px solid #1a3a1a;border-radius:6px;padding:12px;margin-bottom:10px">
+      <div style="font-size:10px;color:#28c840;margin-bottom:6px">✦ AI GENERATED PATCH</div>
+      <div style="font-size:10px;color:#555;margin-bottom:4px"># php.ini — disable dangerous functions</div>
+      <div style="font-size:10px;color:#ff5f57">- disable_functions =</div>
+      <div style="font-size:10px;color:#28c840">+ disable_functions = exec,passthru,</div>
+      <div style="font-size:10px;color:#28c840;padding-left:14px">shell_exec,system,proc_open</div>
+    </div>
+    <div style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:#444;margin-bottom:4px"><span>Generating fix</span><span class="green">✓</span></div>
+      <div class="bar-wrap"><div class="bar-fill" style="--w:100%;background:#28c840"></div></div>
+    </div>
+    <div style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:#444;margin-bottom:4px"><span>Validating patch</span><span class="green">✓</span></div>
+      <div class="bar-wrap"><div class="bar-fill" style="--w:100%;background:#28c840"></div></div>
+    </div>
+    <div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:#444;margin-bottom:4px"><span>Applying to target</span><span class="teal" id="apct">0%</span></div>
+      <div class="bar-wrap"><div class="bar-fill" style="--w:68%;background:linear-gradient(90deg,#00d7aa,#37b9ff)"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- CARD 4: HELP / COMMANDS -->
+<div class="card">
+  <div class="titlebar">
+    <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+    <div class="tab-title">sentinel — help</div>
+  </div>
+  <div class="body">
+    <div style="font-size:11px;color:#555;margin-bottom:10px">$ sentinel help</div>
+    <div style="font-size:10px;color:#444;margin-bottom:8px;letter-spacing:0.05em">Available Commands:</div>
+    <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:11px">
+      <span class="teal fade-row">scan --url</span><span class="out fade-row">Full attack timeline scan</span>
+      <span class="teal fade-row">patches</span><span class="out fade-row">Generate AI fixes for scan</span>
+      <span class="teal fade-row">chat</span><span class="out fade-row">Interactive AI chat mode</span>
+      <span class="teal fade-row">compare</span><span class="out fade-row">Diff two scan results</span>
+      <span class="teal fade-row">plugins list</span><span class="out fade-row">View security plugins</span>
+      <span class="teal fade-row">history</span><span class="out fade-row">Past scan reports</span>
+      <span class="teal fade-row">doctor</span><span class="out fade-row">Check system health</span>
+    </div>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid #1a1a1a;font-size:11px;color:#333">
+      <span class="prompt">sentinel [nvidia/nemotron] </span><span class="dim">▶ </span><span class="cursor"></span>
+    </div>
+  </div>
+</div>
+
+<!-- CARD 5: SYSTEM HEALTH -->
+<div class="card">
+  <div class="titlebar">
+    <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+    <div class="tab-title">sentinel — doctor</div>
+  </div>
+  <div class="body">
+    <div style="font-size:11px;color:#555;margin-bottom:12px">$ sentinel doctor</div>
+    <div id="healthrows">
+      <div class="fade-row" style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #161616;font-size:11px">
+        <span style="color:#888">AI Engine</span><span class="green">● ONLINE</span>
+      </div>
+      <div class="fade-row" style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #161616;font-size:11px">
+        <span style="color:#888">CVE Database</span><span class="green">● SYNCED</span>
+      </div>
+      <div class="fade-row" style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #161616;font-size:11px">
+        <span style="color:#888">Patch Generator</span><span class="green">● READY</span>
+      </div>
+      <div class="fade-row" style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #161616;font-size:11px">
+        <span style="color:#888">Ollama Local</span><span class="yellow">● IDLE</span>
+      </div>
+      <div class="fade-row" style="display:flex;justify-content:space-between;padding:5px 0;font-size:11px">
+        <span style="color:#888">Plugin Runtime</span><span class="green">● ACTIVE</span>
+      </div>
+    </div>
+    <div style="margin-top:14px;background:#0a1a0a;border:1px solid #1a3a1a;border-radius:4px;padding:8px 10px;font-size:10px;color:#28c840">
+      ✓ All systems operational — v0.2.0 Production Ready
+    </div>
+  </div>
+</div>
+
+<!-- CARD 6: ETHICS DISCLAIMER (styled exactly like CLI) -->
+<div class="card">
+  <div class="titlebar">
+    <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+    <div class="tab-title">sentinel — ethics check</div>
+  </div>
+  <div class="body">
+    <div style="font-size:11px;color:#555;margin-bottom:12px">$ sentinel scan --url https://target.io</div>
+    <div style="border:1px solid #3a3a00;border-radius:6px;padding:14px;margin-bottom:12px;position:relative">
+      <div style="position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:#0d0d0d;padding:0 10px;font-size:10px;color:#febc2e;letter-spacing:0.08em">Ethics Disclaimer</div>
+      <div style="font-size:11px;color:#888;margin-bottom:8px">Target</div>
+      <div style="font-size:11px;color:#00d7aa;margin-bottom:10px">https://target.io</div>
+      <div style="font-size:11px;color:#febc2e;margin-bottom:6px">⚠ By proceeding you confirm:</div>
+      <div style="font-size:10px;color:#888;line-height:1.7">• You own this target, or<br>• You have explicit written permission<br><br><span style="color:#555">Unauthorized scanning is illegal.</span></div>
+    </div>
+    <div style="font-size:11px;color:#888">Type <span class="green" style="font-weight:700">YES</span> to confirm and start scan:</div>
+    <div style="margin-top:8px;background:#111;border:1px solid #1e2a1e;border-radius:4px;padding:8px 10px;font-size:11px">
+      <span class="prompt">sentinel ▶ </span><span class="cursor"></span>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+function countUp(id, target, duration, suffix=''){
+  const el = document.getElementById(id);
+  if(!el) return;
+  let start = 0;
+  const step = target / (duration / 30);
+  const t = setInterval(()=>{
+    start = Math.min(start + step, target);
+    el.textContent = Math.floor(start) + suffix;
+    if(start >= target) clearInterval(t);
+  }, 30);
+}
+setTimeout(()=> countUp('c1', 2, 800), 600);
+setTimeout(()=> countUp('c2', 5, 1000), 800);
+setTimeout(()=> countUp('c3', 11, 1200), 1000);
+setTimeout(()=> countUp('c4', 8, 1000), 1200);
+setTimeout(()=> countUp('apct', 68, 1500, '%'), 500);
+</script>

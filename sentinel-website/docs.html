@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Documentation | SENTINEL — AI-Powered Security</title>
+  <meta name="description" content="Technical documentation and installation guides for Sentinel CLI. Learn how to install via NPM, Docker, or Source."/>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .docs-page { padding-top: 100px; padding-bottom: 100px; }
+    
+    .btn-back {
+      position: fixed;
+      top: 32px;
+      left: 32px;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(20px) saturate(160%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      border: 1px solid rgba(56, 189, 248, 0.13);
+      border-radius: 999px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.3s var(--ease);
+      box-shadow: 0 4px 32px rgba(0, 0, 0, 0.45);
+    }
+    .btn-back:hover {
+      background: rgba(15, 23, 42, 0.75);
+      color: #fff;
+      border-color: var(--primary);
+      transform: translateX(-5px);
+      box-shadow: 0 8px 40px rgba(0, 209, 255, 0.2);
+    }
+    .btn-back svg { transition: transform 0.3s var(--ease); }
+    .btn-back:hover svg { transform: translateX(-3px); }
+
+    .docs-container { max-width: 1200px; margin: 0 auto; padding: 0 32px; display: grid; grid-template-columns: 240px 1fr; gap: 60px; }
+    
+    /* Sidebar */
+    .docs-sidebar { position: sticky; top: 140px; height: fit-content; display: flex; flex-direction: column; gap: 32px; }
+    .sidebar-group { display: flex; flex-direction: column; gap: 12px; }
+    .sidebar-h3 { font-family: var(--ff-h); font-size: 0.85rem; font-weight: 800; text-transform: uppercase; color: var(--dim); letter-spacing: 0.1em; }
+    .sidebar-link { font-size: 0.9rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .sidebar-link:hover { color: var(--primary); }
+    .sidebar-link.active { color: var(--primary); font-weight: 600; }
+
+    /* Content */
+    .docs-content { max-width: 800px; }
+    .docs-section { margin-bottom: 80px; scroll-margin-top: 140px; }
+    .docs-h1 { font-family: var(--ff-h); font-size: 3.5rem; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 24px; }
+    .docs-h2 { font-family: var(--ff-h); font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .docs-h3 { font-family: var(--ff-h); font-size: 1.4rem; font-weight: 700; margin: 32px 0 16px; color: var(--text); }
+    .docs-p { font-size: 1.1rem; line-height: 1.7; color: var(--muted); margin-bottom: 20px; }
+    
+    .docs-code-block { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--r-md); padding: 24px; margin: 24px 0; position: relative; overflow: hidden; }
+    .docs-code-block::before { content: ""; position: absolute; top: 0; left: 0; width: 2px; height: 100%; background: var(--primary); }
+    .docs-code-block pre { font-family: var(--ff-m); font-size: 0.95rem; color: #fff; overflow-x: auto; line-height: 1.5; }
+    
+    .docs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-top: 32px; }
+    .docs-card { background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: var(--r-md); padding: 24px; }
+    .docs-card h4 { font-family: var(--ff-h); font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; }
+    
+    .table-wrap { width: 100%; overflow-x: auto; margin: 32px 0; border: 1px solid var(--border); border-radius: var(--r-md); }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { background: rgba(255,255,255,0.03); padding: 14px 20px; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--dim); border-bottom: 1px solid var(--border); }
+    td { padding: 14px 20px; font-size: 0.95rem; color: var(--muted); border-bottom: 1px solid var(--border); }
+    
+    .feature-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+    .feature-list li { display: flex; align-items: flex-start; gap: 12px; color: var(--muted); line-height: 1.6; }
+    .feature-list li::before { content: "→"; color: var(--primary); font-weight: 900; }
+
+    @media (max-width: 1024px) {
+      .docs-container { grid-template-columns: 1fr; }
+      .docs-sidebar { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Back Button -->
+  <a href="index.html" class="btn-back">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+    <span>Back to Home</span>
+  </a>
+
+  <main class="docs-page">
+    <div class="docs-container">
+      
+      <!-- Sidebar -->
+      <aside class="docs-sidebar">
+        <div class="sidebar-group">
+          <h3 class="sidebar-h3">Introduction</h3>
+          <a href="#overview" class="sidebar-link">Product Overview</a>
+          <a href="#architecture" class="sidebar-link">System Architecture</a>
+        </div>
+        <div class="sidebar-group">
+          <h3 class="sidebar-h3">Installation</h3>
+          <a href="#install-npm" class="sidebar-link">NPM Package</a>
+          <a href="#install-docker" class="sidebar-link">Docker Image</a>
+          <a href="#install-source" class="sidebar-link">From Source</a>
+        </div>
+        <div class="sidebar-group">
+          <h3 class="sidebar-h3">Commands</h3>
+          <a href="#command-ref" class="sidebar-link">Command Reference</a>
+          <a href="#troubleshooting" class="sidebar-link">Troubleshooting</a>
+        </div>
+      </aside>
+
+      <!-- Content -->
+      <div class="docs-content">
+        
+        <section id="overview" class="docs-section">
+          <h1 class="docs-h1">Documentation</h1>
+          <p class="docs-p">Sentinel CLI is a production-ready, AI-augmented command-line security scanner designed for ethical hackers, security engineers, and developers. It replaces traditional slow, GUI-dependent scanners with a blazing-fast terminal experience that delivers real vulnerability data in under 90 seconds.</p>
+          
+          <div class="docs-grid">
+            <div class="docs-card">
+              <h4>DAST Scanning</h4>
+              <p class="docs-p" style="font-size: 0.9rem;">Tests live web applications for 11 vulnerability categories in parallel.</p>
+            </div>
+            <div class="docs-card">
+              <h4>AI Patch Engine</h4>
+              <p class="docs-p" style="font-size: 0.9rem;">Generates copy-paste ready code fixes using OpenRouter-powered LLMs.</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="architecture" class="docs-section">
+          <h2 class="docs-h2">System Architecture</h2>
+          <p class="docs-p">The tool combines a pure-Python parallel attack engine with an OpenRouter-powered AI layer, enabling not just vulnerability detection but also automated patch generation and conversational security analysis.</p>
+          <ul class="feature-list">
+            <li><strong>CLI Layer:</strong> Built with Typer and prompt_toolkit for a rich REPL experience.</li>
+            <li><strong>Attack Engine:</strong> Uses ThreadPoolExecutor for 8-way parallel vulnerability checks.</li>
+            <li><strong>Intelligence Layer:</strong> Context-aware AI brain for remediation analysis.</li>
+            <li><strong>Data Layer:</strong> Local JSON-based scan storage at ~/.sentinel/scans/.</li>
+          </ul>
+        </section>
+
+        <section id="install-npm" class="docs-section">
+          <h2 class="docs-h2">NPM Installation</h2>
+          <p class="docs-p">The fastest way to install Sentinel globally on Windows, macOS, or Linux.</p>
+          <h3 class="docs-h3">1. Install Package</h3>
+          <div class="docs-code-block">
+            <pre>npm install -g sentinel-security</pre>
+          </div>
+          <h3 class="docs-h3">2. Set API Key</h3>
+          <p class="docs-p">Sentinel requires an OpenRouter API Key for AI features.</p>
+          <div class="docs-code-block">
+            <pre># macOS / Linux
+export OPENROUTER_API_KEY="sk-or-your-key-here"
+
+# Windows (PowerShell)
+$env:OPENROUTER_API_KEY="sk-or-your-key-here"</pre>
+          </div>
+          <h3 class="docs-h3">3. Verify</h3>
+          <div class="docs-code-block">
+            <pre>sentinel doctor</pre>
+          </div>
+        </section>
+
+        <section id="install-docker" class="docs-section">
+          <h2 class="docs-h2">Docker Installation</h2>
+          <p class="docs-p">The Docker version is the most powerful, bundling OWASP ZAP and Nuclei pre-configured.</p>
+          <h3 class="docs-h3">1. Build Image</h3>
+          <div class="docs-code-block">
+            <pre>git clone https://github.com/your-repo/sentinel-cli.git
+cd sentinel-cli
+docker build -t sentinel-security:latest .</pre>
+          </div>
+          <h3 class="docs-h3">2. Run Container</h3>
+          <div class="docs-code-block">
+            <pre>docker run -it -e OPENROUTER_API_KEY=your-key sentinel-security</pre>
+          </div>
+        </section>
+
+        <section id="install-source" class="docs-section">
+          <h2 class="docs-h2">From Source</h2>
+          <p class="docs-p">For developers who want to contribute or customize the attack engine.</p>
+          <div class="docs-code-block">
+            <pre>git clone https://github.com/your-repo/sentinel-cli.git
+cd sentinel-cli
+pip install -e .
+sentinel</pre>
+          </div>
+        </section>
+
+        <section id="command-ref" class="docs-section">
+          <h2 class="docs-h2">Command Reference</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Command</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>scan --url &lt;url&gt;</code></td>
+                  <td>Launch a new security scan</td>
+                </tr>
+                <tr>
+                  <td><code>patches</code></td>
+                  <td>Generate AI code fixes for last scan</td>
+                </tr>
+                <tr>
+                  <td><code>chat</code></td>
+                  <td>Interactive AI session about findings</td>
+                </tr>
+                <tr>
+                  <td><code>compare &lt;id1&gt; &lt;id2&gt;</code></td>
+                  <td>Diff two scan reports</td>
+                </tr>
+                <tr>
+                  <td><code>history</code></td>
+                  <td>List all saved scans</td>
+                </tr>
+                <tr>
+                  <td><code>doctor</code></td>
+                  <td>Run system health check</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="troubleshooting" class="docs-section">
+          <h2 class="docs-h2">Troubleshooting</h2>
+          <h3 class="docs-h3">sentinel: command not found</h3>
+          <p class="docs-p">Ensure you installed with the <code>-g</code> flag and your npm global bin directory is in your PATH.</p>
+          
+          <h3 class="docs-h3">Missing API Key</h3>
+          <p class="docs-p">AI features will fail without <code>OPENROUTER_API_KEY</code>. Get one at openrouter.ai/keys and set it in your environment.</p>
+          
+          <h3 class="docs-h3">ZAP connection error</h3>
+          <p class="docs-p">In Docker, ZAP takes ~30s to start. If scanning fails immediately, wait a moment and retry the scan command.</p>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="footer-logo">SENTINEL</div>
+        <div class="footer-tag">Defend the grid.</div>
+      </div>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="docs.html">Docs</a>
+        <a href="https://github.com/Virajsawant06/Major_project">GitHub</a>
+      </div>
+      <div class="footer-copy">© 2026 Sentinel Project. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
