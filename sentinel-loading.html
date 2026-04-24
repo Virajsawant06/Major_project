@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SENTINEL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cyan: #4af0d0;
+    --blue: #38bdf8;
+    --white: #ffffff;
+    --bg: #060910;
+    --bg2: #0a0e15;
+    --dim: rgba(74,240,208,0.08);
+    --mono: 'Share Tech Mono', monospace;
+    --display: 'Rajdhani', sans-serif;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--bg);
+    color: var(--white);
+    font-family: var(--display);
+    overflow: hidden;
+  }
+
+  /* ── SCANLINES ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.18) 2px,
+      rgba(0,0,0,0.18) 4px
+    );
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  /* ── NOISE VIGNETTE ── */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.75) 100%);
+    pointer-events: none;
+    z-index: 99;
+  }
+
+  /* ── GRID FLOOR ── */
+  .grid-floor {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 55vh;
+    background:
+      linear-gradient(rgba(74,240,208,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(74,240,208,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    transform: perspective(600px) rotateX(55deg);
+    transform-origin: bottom center;
+    mask-image: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 80%);
+    -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 80%);
+    animation: gridShift 8s linear infinite;
+  }
+  @keyframes gridShift {
+    from { background-position: 0 0, 0 0; }
+    to   { background-position: 0 60px, 0 0; }
+  }
+
+  /* ── AMBIENT GLOWS ── */
+  .glow-left {
+    position: fixed;
+    top: 20%; left: -10%;
+    width: 45vw; height: 45vw;
+    background: radial-gradient(circle, rgba(74,240,208,0.07) 0%, transparent 70%);
+    pointer-events: none;
+    animation: ambientDrift 6s ease-in-out infinite alternate;
+  }
+  .glow-right {
+    position: fixed;
+    bottom: 10%; right: -10%;
+    width: 50vw; height: 50vw;
+    background: radial-gradient(circle, rgba(56,189,248,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    animation: ambientDrift 7s ease-in-out infinite alternate-reverse;
+  }
+  @keyframes ambientDrift {
+    from { transform: translate(0,0); }
+    to   { transform: translate(3%, 5%); }
+  }
+
+  /* ── CORNER BRACKETS ── */
+  .bracket {
+    position: fixed;
+    width: 48px; height: 48px;
+    opacity: 0;
+    animation: bracketFade 0.4s ease forwards;
+  }
+  .bracket::before, .bracket::after {
+    content: '';
+    position: absolute;
+    background: var(--cyan);
+  }
+  .bracket::before { width: 2px; height: 100%; }
+  .bracket::after  { width: 100%; height: 2px; }
+
+  .bracket.tl { top: 24px; left: 24px; animation-delay: 0.1s; }
+  .bracket.tl::before { top: 0; left: 0; }
+  .bracket.tl::after  { top: 0; left: 0; }
+
+  .bracket.tr { top: 24px; right: 24px; animation-delay: 0.2s; transform: scaleX(-1); }
+  .bracket.tr::before { top: 0; left: 0; }
+  .bracket.tr::after  { top: 0; left: 0; }
+
+  .bracket.bl { bottom: 24px; left: 24px; animation-delay: 0.3s; transform: scaleY(-1); }
+  .bracket.bl::before { top: 0; left: 0; }
+  .bracket.bl::after  { top: 0; left: 0; }
+
+  .bracket.br { bottom: 24px; right: 24px; animation-delay: 0.4s; transform: scale(-1,-1); }
+  .bracket.br::before { top: 0; left: 0; }
+  .bracket.br::after  { top: 0; left: 0; }
+
+  @keyframes bracketFade {
+    from { opacity: 0; } to { opacity: 0.6; }
+  }
+
+  /* ── CENTER STAGE ── */
+  .stage {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+  }
+
+  /* ── HEX LOGO ── */
+  .hex-wrap {
+    position: relative;
+    width: 164px; height: 188px;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.3s forwards;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .hex-wrap svg { display: block; overflow: visible; }
+
+  /* hex animation styles */
+  @keyframes trace {
+    0%   { stroke-dashoffset: 0; opacity: 0; }
+    4%   { opacity: 1; }
+    72%  { opacity: 1; }
+    92%  { opacity: 0; }
+    100% { stroke-dashoffset: -470; opacity: 0; }
+  }
+  @keyframes traceWhite {
+    0%   { stroke-dashoffset: -10; opacity: 0; }
+    4%   { opacity: 0.9; }
+    72%  { opacity: 0.9; }
+    92%  { opacity: 0; }
+    100% { stroke-dashoffset: -480; opacity: 0; }
+  }
+  @keyframes trace2 {
+    0%   { stroke-dashoffset: -50; opacity: 0; }
+    4%   { opacity: 0.5; }
+    72%  { opacity: 0.5; }
+    92%  { opacity: 0; }
+    100% { stroke-dashoffset: -520; opacity: 0; }
+  }
+  @keyframes breathe {
+    0%,100% { opacity: 0.1; }
+    50%     { opacity: 0.9; }
+  }
+  @keyframes blink {
+    0%,100% { opacity: 0.15; r: 2; }
+    18%     { opacity: 1; r: 5; }
+    36%     { opacity: 0.15; r: 2; }
+  }
+  @keyframes cornerfade {
+    0%,100% { opacity: 0.25; stroke: #4af0d0; }
+    18%     { opacity: 1; stroke: #ffffff; }
+    36%     { opacity: 0.25; stroke: #4af0d0; }
+  }
+  @keyframes outerPulse {
+    0%,100% { opacity: 0.5; }
+    50%     { opacity: 1; }
+  }
+
+  /* ── WORDMARK ── */
+  .wordmark {
+    margin-top: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    opacity: 0;
+    animation: fadeUp 0.5s ease 0.7s forwards;
+  }
+
+  .wordmark-name {
+    font-family: var(--display);
+    font-size: 52px;
+    font-weight: 700;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--white);
+    line-height: 1;
+    position: relative;
+  }
+
+  /* glitch effect on the name */
+  .wordmark-name::before,
+  .wordmark-name::after {
+    content: 'SENTINEL';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+  .wordmark-name::before {
+    color: var(--cyan);
+    clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
+    animation: glitch1 4s steps(1) infinite;
+  }
+  .wordmark-name::after {
+    color: var(--blue);
+    clip-path: polygon(0 60%, 100% 60%, 100% 75%, 0 75%);
+    animation: glitch2 4s steps(1) infinite;
+  }
+  @keyframes glitch1 {
+    0%,90%,100% { transform: translateX(0); opacity: 0; }
+    91%  { transform: translateX(-3px); opacity: 0.8; }
+    92%  { transform: translateX(2px);  opacity: 0.8; }
+    93%  { transform: translateX(0);    opacity: 0; }
+  }
+  @keyframes glitch2 {
+    0%,90%,100% { transform: translateX(0); opacity: 0; }
+    91%  { transform: translateX(3px);  opacity: 0.7; }
+    92%  { transform: translateX(-2px); opacity: 0.7; }
+    93%  { transform: translateX(0);    opacity: 0; }
+  }
+
+  .wordmark-sub {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.35em;
+    color: var(--cyan);
+    opacity: 0.7;
+    text-transform: uppercase;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    margin-top: 28px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    animation: fadeUp 0.4s ease 1s forwards;
+  }
+  .divider-line {
+    width: 80px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan));
+  }
+  .divider-line.right {
+    background: linear-gradient(90deg, var(--cyan), transparent);
+  }
+  .divider-diamond {
+    width: 5px; height: 5px;
+    background: var(--cyan);
+    transform: rotate(45deg);
+  }
+
+  /* ── STATUS LINE ── */
+  .status {
+    margin-top: 20px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: rgba(74,240,208,0.65);
+    height: 16px;
+    opacity: 0;
+    animation: fadeUp 0.4s ease 1.1s forwards;
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap {
+    margin-top: 14px;
+    width: 240px;
+    opacity: 0;
+    animation: fadeUp 0.4s ease 1.2s forwards;
+  }
+  .progress-track {
+    width: 100%;
+    height: 2px;
+    background: rgba(74,240,208,0.12);
+    position: relative;
+    overflow: visible;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--cyan), var(--white));
+    width: 0%;
+    transition: width 0.12s linear;
+    position: relative;
+  }
+  .progress-fill::after {
+    content: '';
+    position: absolute;
+    right: -1px; top: -3px;
+    width: 2px; height: 8px;
+    background: var(--white);
+    box-shadow: 0 0 6px var(--white), 0 0 12px var(--cyan);
+  }
+  .progress-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+  }
+  .progress-labels span {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: rgba(74,240,208,0.4);
+  }
+  .progress-pct {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: var(--cyan);
+  }
+
+  /* ── SYSTEM READOUT (bottom left) ── */
+  .readout {
+    position: fixed;
+    bottom: 36px; left: 36px;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: rgba(74,240,208,0.35);
+    line-height: 1.9;
+    opacity: 0;
+    animation: fadeUp 0.4s ease 1.4s forwards;
+  }
+  .readout-line { display: block; }
+  .readout-line .label { color: rgba(74,240,208,0.55); }
+
+  /* ── VERSION (bottom right) ── */
+  .version {
+    position: fixed;
+    bottom: 36px; right: 36px;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    color: rgba(74,240,208,0.3);
+    text-align: right;
+    line-height: 1.9;
+    opacity: 0;
+    animation: fadeUp 0.4s ease 1.4s forwards;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    position: fixed;
+    top: 28px; left: 0; right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: rgba(74,240,208,0.3);
+    opacity: 0;
+    animation: fadeUp 0.4s ease 0.8s forwards;
+  }
+  .topbar-dot {
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--cyan);
+    opacity: 0.5;
+    animation: blink2 1.4s ease-in-out infinite;
+  }
+  @keyframes blink2 {
+    0%,100% { opacity: 0.2; } 50% { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-floor"></div>
+<div class="glow-left"></div>
+<div class="glow-right"></div>
+
+<!-- corner brackets -->
+<div class="bracket tl"></div>
+<div class="bracket tr"></div>
+<div class="bracket bl"></div>
+<div class="bracket br"></div>
+
+<!-- top bar -->
+<div class="topbar">
+  <div class="topbar-dot"></div>
+  <span>SECURE CHANNEL ESTABLISHED</span>
+  <div class="topbar-dot"></div>
+</div>
+
+<!-- center -->
+<div class="stage">
+  <!-- hex logo -->
+  <div class="hex-wrap">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 164 188" width="164" height="188" style="overflow:visible">
+      <defs>
+        <radialGradient id="rg" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#4af0d0" stop-opacity="0.25"/>
+          <stop offset="100%" stop-color="#070910" stop-opacity="1"/>
+        </radialGradient>
+        <radialGradient id="glow2" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="0.7"/>
+          <stop offset="30%" stop-color="#4af0d0" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="#4af0d0" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <polygon fill="#4af0d0" opacity="0.05" points="82 0 164 47 164 141 82 188 0 141 0 47 82 0"/>
+      <polygon fill="#4af0d0" opacity="0.08" points="82 8 158 53 158 133 82 178 6 133 6 53 82 8"/>
+      <polygon fill="#0a0e15" points="82 14 154 56 154 140 82 182 10 140 10 56 82 14"/>
+      <polygon fill="url(#rg)" points="82 14 154 56 154 140 82 182 10 140 10 56 82 14"/>
+      <polygon fill="url(#glow2)" points="82 14 154 56 154 140 82 182 10 140 10 56 82 14" style="animation: breathe 2.4s ease-in-out infinite;"/>
+      <polygon fill="none" stroke="#4af0d0" stroke-width="1" opacity="0.3" points="82 20 148 60 148 136 82 176 16 136 16 60 82 20"/>
+      <polygon fill="#121824" stroke="#a0f0ff" stroke-width="1" opacity="0.35" points="82 28 142 65 142 131 82 168 22 131 22 65 82 28"/>
+      <polygon fill="none" stroke="#4af0d0" stroke-width="2.5" points="82 14 154 56 154 140 82 182 10 140 10 56 82 14" style="animation: outerPulse 2.4s ease-in-out infinite;"/>
+      <polygon fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-dasharray="50 420" stroke-dashoffset="0" points="82 14 154 56 154 140 82 182 10 140 10 56 82 14" style="animation: traceWhite 2.4s cubic-bezier(0.4,0,0.2,1) infinite; opacity:0;"/>
+      <polygon fill="none" stroke="#4af0d0" stroke-width="6" stroke-linecap="round" stroke-dasharray="80 390" stroke-dashoffset="0" points="82 14 154 56 154 140 82 182 10 140 10 56 82 14" style="animation: trace 2.4s cubic-bezier(0.4,0,0.2,1) infinite; opacity:0;"/>
+      <polygon fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="50 420" stroke-dashoffset="-50" points="82 14 154 56 154 140 82 182 10 140 10 56 82 14" style="animation: trace2 2.4s cubic-bezier(0.4,0,0.2,1) infinite; opacity:0;"/>
+      <g style="animation: cornerfade 2.4s ease-in-out infinite; animation-delay:0s">
+        <line fill="none" stroke-width="2.5" stroke-linecap="round" x1="82" y1="12" x2="68" y2="20"/>
+        <line fill="none" stroke-width="2.5" stroke-linecap="round" x1="82" y1="12" x2="96" y2="20"/>
+      </g>
+      <g style="animation: cornerfade 2.4s ease-in-out infinite; animation-delay:0.4s">
+        <line fill="none" stroke-width="2.5" stroke-linecap="round" x1="154" y1="56" x2="154" y2="68"/>
+        <line fill="none" stroke-width="2.5" stroke-linecap="round" x1="154" y1="56" x2="142" y2="49"/>
+      </g>
+      <g style="animation: cornerfade 2.4s ease-in-out infinite; animation-delay:0.8s">
+        <line fill="none" stroke-width="2.5" stroke-linecap="round" x1="154" y1="140" x2="154" y2="128"/>
+        <line fill="none" stroke-width="2.5" stroke-linecap="round" x1="154" y1="140" x2="142" y2="147"/>
+      </g>
+      <g style="animation: cornerfade 2.4s ease-in-out infinite; animation-delay:1.2s">
+        <line fill="none" stroke-width="2.5" stroke-linecap="round" x1="82" y1="184" x2="68" y2="176"/>
+        <line fill="none" stroke-width="2.5" stroke-linecap="round" x1="82" y1="184" x2="96" y2="176"/>
+      </g>
+      <g style="animation: cornerfade 2.4s ease-in-out infinite; animation-delay:1.6s">
+        <line fill="none" stroke-width="2.5" stroke-linecap="round" x1="10" y1="140" x2="10" y2="128"/>
+        <line fill="none" stroke-width="2.5" stroke-linecap="round" x1="10" y1="140" x2="22" y2="147"/>
+      </g>
+      <g style="animation: cornerfade 2.4s ease-in-out infinite; animation-delay:2.0s">
+        <line fill="none" stroke-width="2.5" stroke-linecap="round" x1="10" y1="56" x2="10" y2="68"/>
+        <line fill="none" stroke-width="2.5" stroke-linecap="round" x1="10" y1="56" x2="22" y2="49"/>
+      </g>
+      <circle fill="#ffffff" cx="82"  cy="14"  style="animation: blink 2.4s ease-in-out infinite; animation-delay:0s;   opacity:0.2" r="2"/>
+      <circle fill="#ffffff" cx="154" cy="56"  style="animation: blink 2.4s ease-in-out infinite; animation-delay:0.4s; opacity:0.2" r="2"/>
+      <circle fill="#ffffff" cx="154" cy="140" style="animation: blink 2.4s ease-in-out infinite; animation-delay:0.8s; opacity:0.2" r="2"/>
+      <circle fill="#ffffff" cx="82"  cy="182" style="animation: blink 2.4s ease-in-out infinite; animation-delay:1.2s; opacity:0.2" r="2"/>
+      <circle fill="#ffffff" cx="10"  cy="140" style="animation: blink 2.4s ease-in-out infinite; animation-delay:1.6s; opacity:0.2" r="2"/>
+      <circle fill="#ffffff" cx="10"  cy="56"  style="animation: blink 2.4s ease-in-out infinite; animation-delay:2.0s; opacity:0.2" r="2"/>
+    </svg>
+  </div>
+
+  <!-- wordmark -->
+  <div class="wordmark">
+    <div class="wordmark-name">SENTINEL</div>
+    <div class="wordmark-sub">ADVANCED THREAT INTELLIGENCE PLATFORM</div>
+  </div>
+
+  <!-- divider -->
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-diamond"></div>
+    <div class="divider-line right"></div>
+  </div>
+
+  <!-- status -->
+  <div class="status" id="statusText">INITIALIZING CORE SYSTEMS...</div>
+
+  <!-- progress -->
+  <div class="progress-wrap">
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-labels">
+      <span id="progressLabel">BOOT SEQUENCE</span>
+      <span class="progress-pct" id="progressPct">0%</span>
+    </div>
+  </div>
+</div>
+
+<!-- bottom readout -->
+<div class="readout">
+  <span class="readout-line"><span class="label">NODE &nbsp;&nbsp;&nbsp;</span> SYS-ALPHA-07</span>
+  <span class="readout-line"><span class="label">UPLINK &nbsp;</span> 128-BIT ENCRYPTED</span>
+  <span class="readout-line"><span class="label">STATUS &nbsp;</span> <span id="readoutStatus">STANDBY</span></span>
+</div>
+
+<div class="version">
+  <span style="display:block">BUILD 4.2.1-RC</span>
+  <span style="display:block">2024.04.24</span>
+</div>
+
+<script>
+  const stages = [
+    { pct: 12,  label: 'BOOT SEQUENCE',        status: 'INITIALIZING CORE SYSTEMS...',    readout: 'BOOTING' },
+    { pct: 28,  label: 'KERNEL LOAD',           status: 'LOADING THREAT DATABASE...',      readout: 'KERNEL LOAD' },
+    { pct: 45,  label: 'NEURAL SYNC',           status: 'CALIBRATING NEURAL NETWORKS...',  readout: 'SYNCING' },
+    { pct: 61,  label: 'PROTOCOL HANDSHAKE',    status: 'ESTABLISHING SECURE CHANNELS...', readout: 'HANDSHAKE' },
+    { pct: 77,  label: 'THREAT ANALYSIS',       status: 'SCANNING PERIMETER...',           readout: 'SCANNING' },
+    { pct: 91,  label: 'FINAL CHECKS',          status: 'VERIFYING SYSTEM INTEGRITY...',   readout: 'VERIFYING' },
+    { pct: 100, label: 'ONLINE',                status: 'SENTINEL ONLINE. STANDING BY.',   readout: 'ONLINE' },
+  ];
+
+  const fill    = document.getElementById('progressFill');
+  const pct     = document.getElementById('progressPct');
+  const label   = document.getElementById('progressLabel');
+  const status  = document.getElementById('statusText');
+  const readout = document.getElementById('readoutStatus');
+
+  let current = 0;
+
+  function animateTo(target, duration, cb) {
+    const start = parseFloat(fill.style.width) || 0;
+    const startTime = performance.now();
+    function step(now) {
+      const t = Math.min((now - startTime) / duration, 1);
+      const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+      const val = start + (target - start) * ease;
+      fill.style.width = val + '%';
+      pct.textContent = Math.round(val) + '%';
+      if (t < 1) requestAnimationFrame(step);
+      else if (cb) cb();
+    }
+    requestAnimationFrame(step);
+  }
+
+  function runStage(i) {
+    if (i >= stages.length) return;
+    const s = stages[i];
+    label.textContent  = s.label;
+    status.textContent = s.status;
+    readout.textContent = s.readout;
+    const duration = i === stages.length - 1 ? 600 : 400 + Math.random() * 300;
+    animateTo(s.pct, duration, () => {
+      const delay = i === stages.length - 1 ? 0 : 300 + Math.random() * 500;
+      setTimeout(() => runStage(i + 1), delay);
+    });
+  }
+
+  setTimeout(() => runStage(0), 1400);
+</script>
+</body>
+</html>
