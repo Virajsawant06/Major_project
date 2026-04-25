@@ -301,21 +301,51 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   });
 });
 
-// ─── Process Section Cursor Guide ─────────────────
-const processSection = document.getElementById('process');
-const cursorGuide = document.getElementById('process-cursor-guide');
+// ─── Section Cursor Guides ────────────────────────
+const cursorGuides = [
+  { sectionId: 'process', guideId: 'process-cursor-guide' },
+  { sectionId: 'capabilities', guideId: 'capabilities-cursor-guide' }
+];
 
-if (processSection && cursorGuide) {
-  processSection.addEventListener('mousemove', e => {
-    cursorGuide.style.left = e.clientX + 'px';
-    cursorGuide.style.top = e.clientY + 'px';
-  });
+cursorGuides.forEach(pair => {
+  const section = document.getElementById(pair.sectionId);
+  const guide = document.getElementById(pair.guideId);
+  
+  if (section && guide) {
+    section.addEventListener('mousemove', e => {
+      guide.style.left = e.clientX + 'px';
+      guide.style.top = e.clientY + 'px';
+    });
 
-  processSection.addEventListener('mouseenter', () => {
-    cursorGuide.classList.add('active');
-  });
+    section.addEventListener('mouseenter', () => guide.classList.add('active'));
+    section.addEventListener('mouseleave', () => guide.classList.remove('active'));
+  }
+});
 
-  processSection.addEventListener('mouseleave', () => {
-    cursorGuide.classList.remove('active');
-  });
-}
+// ─── Features Parallax Particles ──────────────────
+window.addEventListener('scroll', () => {
+  const featSection = document.getElementById('features');
+  if (!featSection) return;
+
+  const rect = featSection.getBoundingClientRect();
+  const viewHeight = window.innerHeight;
+
+  if (rect.top < viewHeight && rect.bottom > 0) {
+    const scrolled = -rect.top;
+    
+    // Parallax background title
+    const bgTitle = featSection.querySelector('.parallax-bg-title');
+    if (bgTitle) {
+      const offset = rect.top * 0.2;
+      bgTitle.style.transform = `translate(-50%, calc(-50% + ${offset}px))`;
+    }
+
+    // Parallax particles and content
+    const items = featSection.querySelectorAll('.feat-parallax-particle, .section-inner');
+    items.forEach(p => {
+      const speed = parseFloat(p.dataset.speed) || 0.1;
+      const yPos = scrolled * speed;
+      p.style.transform = `translateY(${yPos}px)`;
+    });
+  }
+}, { passive: true });

@@ -2259,42 +2259,32 @@ code {
     0 0 0 1px rgba(0, 209, 255, 0.15) inset;
 }
 
-.cap-icon {
-  width: 56px;
-  height: 56px;
-  background: rgba(0, 209, 255, 0.1);
-  border: 1px solid rgba(0, 209, 255, 0.2);
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 32px;
-  color: var(--primary);
-  font-size: 24px;
-}
+
+
 
 .cap-tag {
   font-family: var(--ff-m);
-  font-size: 11px;
-  letter-spacing: 0.2em;
+  font-size: 12px;
+  letter-spacing: 0.25em;
   color: var(--primary);
-  margin-bottom: 14px;
+  margin-bottom: 24px;
   opacity: 0.8;
 }
 
 .cap-title {
-  font-size: 28px;
+  font-size: 36px;
   font-weight: 700;
   color: #fff;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   letter-spacing: -0.01em;
 }
 
 .cap-desc {
-  font-size: 15px;
+  font-size: 18px;
   color: var(--muted);
-  line-height: 1.7;
+  line-height: 1.6;
   font-weight: 400;
+  max-width: 90%;
 }
 
 .cap-pill-row {
@@ -2316,16 +2306,18 @@ code {
 
 .cap-bg-text {
   position: absolute;
-  bottom: -20px;
-  left: 24px;
-  font-size: 120px;
+  bottom: -10px;
+  left: 20px;
+  font-size: 140px;
   font-weight: 900;
   color: transparent;
-  -webkit-text-stroke: 1px rgba(0, 209, 255, 0.05);
+  -webkit-text-stroke: 1px rgba(0, 209, 255, 0.03);
   user-select: none;
   pointer-events: none;
   z-index: 1;
   white-space: nowrap;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
 }
 
 @media (max-width: 1100px) {
@@ -2358,4 +2350,22 @@ code {
   .cap-slider-track {
     transform: none !important;
   }
+}
+/* --- FEATURES PARALLAX --- */
+.feat-parallax-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--primary);
+  opacity: 0.1;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.fpp-1 { width: 150px; height: 150px; top: 10%; left: 5%; filter: blur(60px); }
+.fpp-2 { width: 250px; height: 250px; bottom: 10%; right: 5%; filter: blur(80px); background: #38bdf8; }
+.fpp-3 { width: 100px; height: 100px; top: 50%; left: 40%; filter: blur(40px); opacity: 0.05; }
+
+.features-parallax-wrapper {
+  position: relative;
+  transition: transform 0.1s linear;
 }

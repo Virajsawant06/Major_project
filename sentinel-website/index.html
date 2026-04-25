@@ -461,6 +461,9 @@
   <section class="section capabilities" id="capabilities">
     <div class="section-glow glow-2" style="top: 20%; left: -10%;"></div>
     <div class="section-glow glow-1" style="bottom: 10%; right: -10%; opacity: 0.5;"></div>
+    
+    <div id="capabilities-cursor-guide" class="glass-pill-guide">SCROLL</div>
+
     <div class="cap-sticky-wrapper">
       <div class="container cap-flex-container">
         <div class="cap-side-header reveal">
@@ -481,7 +484,7 @@
           <div class="cap-slider-track" id="capSliderTrack">
             <!-- Card 1: DAST -->
             <div class="cap-card">
-              <div class="cap-icon"><i class="fas fa-radar"></i></div>
+
               <div class="cap-tag">01 — DAST</div>
               <h3 class="cap-title">Dynamic Analysis</h3>
               <p class="cap-desc">Automated vulnerability discovery using <strong>Nuclei</strong>. Detects RCE, SQLi,
@@ -494,7 +497,7 @@
 
             <!-- Card 2: Recon -->
             <div class="cap-card">
-              <div class="cap-icon"><i class="fas fa-fingerprint"></i></div>
+
               <div class="cap-tag">02 — RECON</div>
               <h3 class="cap-title">Attack Surface</h3>
               <p class="cap-desc">Full-spectrum reconnaissance via <strong>Subfinder</strong>. Maps subdomains and
@@ -507,7 +510,7 @@
 
             <!-- Card 3: HTTP Audit -->
             <div class="cap-card">
-              <div class="cap-icon"><i class="fas fa-shield-halved"></i></div>
+
               <div class="cap-tag">03 — HTTP</div>
               <h3 class="cap-title">Header Security</h3>
               <p class="cap-desc">Deep audit of HTTP response headers. Validates <strong>CSP, HSTS</strong>, and secure
@@ -515,12 +518,12 @@
               <div class="cap-pill-row">
                 <span class="cap-pill">HSTS</span><span class="cap-pill">X-Frame</span>
               </div>
-              <span class="cap-bg-text">HTTP</span>
+              <span class="cap-bg-text">HEADERS</span>
             </div>
 
             <!-- Card 4: Network -->
             <div class="cap-card">
-              <div class="cap-icon"><i class="fas fa-network-wired"></i></div>
+
               <div class="cap-tag">04 — NETWORK</div>
               <h3 class="cap-title">Port Intelligence</h3>
               <p class="cap-desc">Native service discovery. Identifies open ports, protocols, and <strong>Shadow
@@ -533,7 +536,7 @@
 
             <!-- Card 5: SSL -->
             <div class="cap-card">
-              <div class="cap-icon"><i class="fas fa-lock"></i></div>
+
               <div class="cap-tag">05 — CRYPTO</div>
               <h3 class="cap-title">TLS Analysis</h3>
               <p class="cap-desc">Comprehensive SSL/TLS health check. Flags weak ciphers, expired certs, and
@@ -541,7 +544,7 @@
               <div class="cap-pill-row">
                 <span class="cap-pill">TLS 1.3</span><span class="cap-pill">Ciphers</span>
               </div>
-              <span class="cap-bg-text">SSL</span>
+              <span class="cap-bg-text">SSL/TLS</span>
             </div>
 
             <!-- Card 6: AI Patch -->
@@ -604,23 +607,19 @@
       });
     }, { passive: true });
 
-    // Parallax effect for section background titles
-    window.addEventListener('scroll', () => {
-      const scroll = window.pageYOffset;
-      const featuresTitle = document.getElementById('featuresBgTitle');
-      if (featuresTitle) {
-        const rect = featuresTitle.parentElement.getBoundingClientRect();
-        const offset = rect.top * 0.2; // Move at 20% speed
-        featuresTitle.style.transform = `translate(-50%, calc(-50% + ${offset}px))`;
-      }
-    }, { passive: true });
   </script>
 
   <!-- ═══ FEATURES ═══ -->
   <section class="section" id="features" style="overflow: hidden; position: relative; padding-top: 60px;">
     <div class="parallax-bg-title" id="featuresBgTitle">FEATURES</div>
     <div class="section-glow glow-3"></div>
-    <div class="section-inner">
+    
+    <!-- Floating Parallax Elements -->
+    <div class="feat-parallax-particle fpp-1" data-speed="0.1"></div>
+    <div class="feat-parallax-particle fpp-2" data-speed="-0.15"></div>
+    <div class="feat-parallax-particle fpp-3" data-speed="0.2"></div>
+    
+    <div class="section-inner" data-speed="0.05">
       <div style="text-align: center; margin-bottom: 80px;">
         <div class="section-eyebrow reveal" style="margin-bottom: 24px;">Features</div>
         <h2 class="section-h2 reveal" style="font-size: clamp(2rem, 5vw, 4.5rem);">Built for serious security engineers.</h2>
