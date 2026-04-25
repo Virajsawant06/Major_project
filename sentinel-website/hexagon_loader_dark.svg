@@ -1,19 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 174 198" style="overflow: visible;">
   <defs>
     <radialGradient id="rg" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#4af0d0" stop-opacity="0.25"/>
+      <stop offset="0%" stop-color="#00D1FF" stop-opacity="0.25"/>
       <stop offset="100%" stop-color="#070910" stop-opacity="1"/>
     </radialGradient>
     <radialGradient id="glow2" cx="50%" cy="50%" r="50%">
       <stop offset="0%" stop-color="#ffffff" stop-opacity="0.7"/>
-      <stop offset="30%" stop-color="#4af0d0" stop-opacity="0.3"/>
-      <stop offset="100%" stop-color="#4af0d0" stop-opacity="0"/>
+      <stop offset="30%" stop-color="#00D1FF" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#00D1FF" stop-opacity="0"/>
     </radialGradient>
   </defs>
 
   <!-- bg shells -->
-  <polygon fill="#4af0d0" opacity="0.05" points="82 0 164 47 164 141 82 188 0 141 0 47 82 0"/>
-  <polygon fill="#4af0d0" opacity="0.08" points="82 8 158 53 158 133 82 178 6 133 6 53 82 8"/>
+  <polygon fill="#00D1FF" opacity="0.05" points="82 0 164 47 164 141 82 188 0 141 0 47 82 0"/>
+  <polygon fill="#00D1FF" opacity="0.08" points="82 8 158 53 158 133 82 178 6 133 6 53 82 8"/>
 
   <!-- solid base -->
   <polygon fill="#0a0e15" points="82 14 154 56 154 140 82 182 10 140 10 56 82 14"/>
@@ -23,37 +23,37 @@
   <polygon fill="url(#glow2)" points="82 14 154 56 154 140 82 182 10 140 10 56 82 14" style="animation: breathe 2.4s ease-in-out infinite; opacity: 0.3;"/>
 
   <!-- inner rings -->
-  <polygon fill="none" stroke="#4af0d0" stroke-width="1" opacity="0.3" points="82 20 148 60 148 136 82 176 16 136 16 60 82 20"/>
+  <polygon fill="none" stroke="#00D1FF" stroke-width="1" opacity="0.3" points="82 20 148 60 148 136 82 176 16 136 16 60 82 20"/>
   <polygon fill="#121824" stroke="#a0f0ff" stroke-width="1" opacity="0.35" points="82 28 142 65 142 131 82 168 22 131 22 65 82 28"/>
 
   <!-- main border -->
-  <polygon fill="none" stroke="#4af0d0" stroke-width="2.5" points="82 14 154 56 154 140 82 182 10 140 10 56 82 14" style="animation: outerPulse 2.4s ease-in-out infinite; opacity: 0.6;"/>
+  <polygon fill="none" stroke="#00D1FF" stroke-width="2.5" points="82 14 154 56 154 140 82 182 10 140 10 56 82 14" style="animation: outerPulse 2.4s ease-in-out infinite; opacity: 0.6;"/>
 
   <!-- WHITE hot core trace -->
   <polygon fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-dasharray="50 420" stroke-dashoffset="0" points="82 14 154 56 154 140 82 182 10 140 10 56 82 14" style="animation: traceWhite 2.4s cubic-bezier(0.4,0,0.2,1) infinite; opacity:0;"/>
 
   <!-- MAIN TRACE — thick cyan -->
-  <polygon fill="none" stroke="#4af0d0" stroke-width="6" stroke-linecap="round" stroke-dasharray="80 390" stroke-dashoffset="0" points="82 14 154 56 154 140 82 182 10 140 10 56 82 14" style="animation: trace 2.4s cubic-bezier(0.4,0,0.2,1) infinite; opacity:0;"/>
+  <polygon fill="none" stroke="#00D1FF" stroke-width="6" stroke-linecap="round" stroke-dasharray="80 390" stroke-dashoffset="0" points="82 14 154 56 154 140 82 182 10 140 10 56 82 14" style="animation: trace 2.4s cubic-bezier(0.4,0,0.2,1) infinite; opacity:0;"/>
 
   <!-- SECONDARY — sky blue tail -->
   <polygon fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="50 420" stroke-dashoffset="-50" points="82 14 154 56 154 140 82 182 10 140 10 56 82 14" style="animation: trace2 2.4s cubic-bezier(0.4,0,0.2,1) infinite; opacity:0;"/>
 
   <!-- corner ticks -->
   <g style="animation: cornerfade 2.4s ease-in-out infinite; opacity: 0.4;">
-    <line fill="none" stroke="#4af0d0" stroke-width="2.5" stroke-linecap="round" x1="82" y1="12" x2="68" y2="20"/>
-    <line fill="none" stroke="#4af0d0" stroke-width="2.5" stroke-linecap="round" x1="82" y1="12" x2="96" y2="20"/>
+    <line fill="none" stroke="#00D1FF" stroke-width="2.5" stroke-linecap="round" x1="82" y1="12" x2="68" y2="20"/>
+    <line fill="none" stroke="#00D1FF" stroke-width="2.5" stroke-linecap="round" x1="82" y1="12" x2="96" y2="20"/>
   </g>
   <g style="animation: cornerfade 2.4s ease-in-out infinite; animation-delay:0.4s; opacity: 0.4;">
-    <line fill="none" stroke="#4af0d0" stroke-width="2.5" stroke-linecap="round" x1="154" y1="56" x2="154" y2="68"/>
-    <line fill="none" stroke="#4af0d0" stroke-width="2.5" stroke-linecap="round" x1="154" y1="56" x2="142" y2="49"/>
+    <line fill="none" stroke="#00D1FF" stroke-width="2.5" stroke-linecap="round" x1="154" y1="56" x2="154" y2="68"/>
+    <line fill="none" stroke="#00D1FF" stroke-width="2.5" stroke-linecap="round" x1="154" y1="56" x2="142" y2="49"/>
   </g>
   <g style="animation: cornerfade 2.4s ease-in-out infinite; animation-delay:0.8s; opacity: 0.4;">
-    <line fill="none" stroke="#4af0d0" stroke-width="2.5" stroke-linecap="round" x1="154" y1="140" x2="154" y2="128"/>
-    <line fill="none" stroke="#4af0d0" stroke-width="2.5" stroke-linecap="round" x1="154" y1="140" x2="142" y2="147"/>
+    <line fill="none" stroke="#00D1FF" stroke-width="2.5" stroke-linecap="round" x1="154" y1="140" x2="154" y2="128"/>
+    <line fill="none" stroke="#00D1FF" stroke-width="2.5" stroke-linecap="round" x1="154" y1="140" x2="142" y2="147"/>
   </g>
   <g style="animation: cornerfade 2.4s ease-in-out infinite; animation-delay:1.2s; opacity: 0.4;">
-    <line fill="none" stroke="#4af0d0" stroke-width="2.5" stroke-linecap="round" x1="82" y1="184" x2="68" y2="176"/>
-    <line fill="none" stroke="#4af0d0" stroke-width="2.5" stroke-linecap="round" x1="82" y1="184" x2="96" y2="176"/>
+    <line fill="none" stroke="#00D1FF" stroke-width="2.5" stroke-linecap="round" x1="82" y1="184" x2="68" y2="176"/>
+    <line fill="none" stroke="#00D1FF" stroke-width="2.5" stroke-linecap="round" x1="82" y1="184" x2="96" y2="176"/>
   </g>
 
   <!-- corner dots -->

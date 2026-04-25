@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sentriq — Liquid Glass Nav</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    background: #07090D;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 28px;
+    font-family: -apple-system, 'SF Pro Display', 'Segoe UI', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* ── Animated background so glass is visible ── */
+  .bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 40%, #00d7aa18 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 80% 20%, #37b9ff14 0%, transparent 55%),
+      radial-gradient(ellipse 50% 50% at 60% 80%, #00d7aa0d 0%, transparent 50%),
+      #07090D;
+  }
+  .bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle, #1a2235 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.4;
+  }
+
+  /* Demo content behind nav */
+  .demo-content {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .demo-content h1 {
+    font-size: clamp(40px, 6vw, 80px);
+    font-weight: 300;
+    color: #E4EBF8;
+    letter-spacing: -2px;
+    line-height: 1.1;
+    text-align: center;
+    opacity: 0.08;
+    user-select: none;
+  }
+  .demo-content h1 em { color: #00d7aa; font-style: normal; }
+
+  /* ── NAV WRAPPER ── */
+  .nav-wrap {
+    position: relative;
+    z-index: 100;
+    width: calc(100% - 48px);
+    max-width: 860px;
+  }
+
+  /* ── THE GLASS NAV ── */
+  nav {
+    position: relative;
+    width: 100%;
+    height: 52px;
+    border-radius: 100px;
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    gap: 2px;
+
+    /* Core glass stack */
+    background:
+      linear-gradient(
+        135deg,
+        rgba(255,255,255,0.09) 0%,
+        rgba(255,255,255,0.03) 40%,
+        rgba(0,215,170,0.05)   70%,
+        rgba(55,185,255,0.04)  100%
+      );
+    backdrop-filter: blur(28px) saturate(180%) brightness(1.1);
+    -webkit-backdrop-filter: blur(28px) saturate(180%) brightness(1.1);
+
+    /* Layered border: outer glow + inner rim */
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow:
+      0 0 0 0.5px rgba(0,215,170,0.18),           /* teal outer rim */
+      inset 0 1px 0 rgba(255,255,255,0.18),        /* top inner highlight */
+      inset 0 -1px 0 rgba(0,0,0,0.25),             /* bottom inner shadow */
+      0 8px 32px rgba(0,0,0,0.45),                  /* depth shadow */
+      0 2px 8px rgba(0,215,170,0.06);              /* soft teal ambient */
+  }
+
+  /* Specular sheen pseudo-element */
+  nav::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 100px;
+    background: linear-gradient(
+      105deg,
+      rgba(255,255,255,0.13) 0%,
+      rgba(255,255,255,0.06) 30%,
+      transparent 55%
+    );
+    pointer-events: none;
+  }
+
+  /* Iridescent edge highlight */
+  nav::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0,215,170,0.5) 20%,
+      rgba(255,255,255,0.7) 50%,
+      rgba(55,185,255,0.5) 80%,
+      transparent 100%
+    );
+    border-radius: 100px;
+    pointer-events: none;
+  }
+
+  /* ── LOGO ── */
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 0 10px 0 8px;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+
+  .logo-hex {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+  }
+
+  .logo-text {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #00d7aa;
+    text-transform: uppercase;
+    text-shadow: 0 0 20px rgba(0,215,170,0.4);
+  }
+
+  /* ── NAV LINKS ── */
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .nav-link {
+    position: relative;
+    padding: 7px 16px;
+    font-size: 13.5px;
+    font-weight: 400;
+    color: rgba(228,235,248,0.65);
+    text-decoration: none;
+    border-radius: 100px;
+    transition: color 0.2s, background 0.2s;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+  }
+  .nav-link:hover {
+    color: #E4EBF8;
+    background: rgba(255,255,255,0.07);
+  }
+  .nav-link.active {
+    color: #E4EBF8;
+    background: rgba(255,255,255,0.08);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.12),
+      inset 0 -1px 0 rgba(0,0,0,0.15);
+  }
+
+  /* ── RIGHT ACTIONS ── */
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    padding-right: 2px;
+  }
+
+  /* GitHub pill */
+  .btn-github {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 16px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(228,235,248,0.75);
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    backdrop-filter: blur(10px);
+    letter-spacing: 0.2px;
+  }
+  .btn-github:hover {
+    background: rgba(255,255,255,0.10);
+    color: #E4EBF8;
+    border-color: rgba(255,255,255,0.18);
+  }
+  .btn-github svg { opacity: 0.75; flex-shrink: 0; }
+
+  /* CTA — Get Started */
+  .btn-cta {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 8px 20px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #07090D;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    letter-spacing: 0.3px;
+    overflow: hidden;
+    transition: transform 0.15s, box-shadow 0.2s;
+
+    background: linear-gradient(135deg, #00d7aa 0%, #00c49a 40%, #37b9ff 100%);
+    box-shadow:
+      0 0 0 1px rgba(0,215,170,0.5),
+      0 4px 16px rgba(0,215,170,0.3),
+      inset 0 1px 0 rgba(255,255,255,0.35);
+  }
+  .btn-cta::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .btn-cta:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      0 0 0 1px rgba(0,215,170,0.6),
+      0 6px 20px rgba(0,215,170,0.4),
+      inset 0 1px 0 rgba(255,255,255,0.35);
+  }
+  .btn-cta:active { transform: translateY(0px); }
+
+  /* ── Demo page label ── */
+  .page-label {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: rgba(90,112,145,0.5);
+    text-transform: uppercase;
+    z-index: 10;
+    user-select: none;
+  }
+
+  /* ── Floating orbs for depth ── */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 1;
+    animation: drift 12s ease-in-out infinite;
+  }
+  .orb-1 { width: 400px; height: 400px; background: rgba(0,215,170,0.06); top: 10%; left: 10%; animation-delay: 0s; }
+  .orb-2 { width: 300px; height: 300px; background: rgba(55,185,255,0.05); top: 40%; right: 15%; animation-delay: -4s; }
+  .orb-3 { width: 250px; height: 250px; background: rgba(0,215,170,0.04); bottom: 20%; left: 40%; animation-delay: -8s; }
+  @keyframes drift {
+    0%,100% { transform: translate(0,0); }
+    33%      { transform: translate(30px, -20px); }
+    66%      { transform: translate(-20px, 15px); }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- Background hero text so glass effect is visible -->
+<div class="demo-content">
+  <h1>Detect. <em>Neutralize.</em><br>Patch. Repeat.</h1>
+</div>
+
+<div class="nav-wrap">
+  <nav>
+
+    <!-- Logo -->
+    <a href="#" class="logo">
+      <svg class="logo-hex" viewBox="0 0 36 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="18,1 34,10 34,30 18,39 2,30 2,10"
+          fill="rgba(0,215,170,0.08)"
+          stroke="#00d7aa" stroke-width="1.5" stroke-opacity="0.85"/>
+        <polygon points="18,5 30,12 30,28 18,35 6,28 6,12"
+          fill="none" stroke="#00d7aa" stroke-width="0.5" stroke-opacity="0.3"/>
+        <!-- S letterform -->
+        <text x="18" y="26" text-anchor="middle"
+          font-family="-apple-system,'SF Pro Display','Segoe UI',sans-serif"
+          font-weight="700" font-size="17" fill="#00d7aa"
+          style="text-shadow:0 0 12px rgba(0,215,170,0.8)">S</text>
+      </svg>
+      <span class="logo-text">Sentriq</span>
+    </a>
+
+    <!-- Nav links -->
+    <div class="nav-links">
+      <a href="#" class="nav-link active">Process</a>
+      <a href="#" class="nav-link">Features</a>
+      <a href="#" class="nav-link">Documentation</a>
+      <a href="#" class="nav-link">Install</a>
+    </div>
+
+    <!-- Actions -->
+    <div class="nav-actions">
+      <a href="#" class="btn-github">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="rgba(228,235,248,0.85)">
+          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+        </svg>
+        GitHub
+      </a>
+      <a href="#" class="btn-cta">Get Started</a>
+    </div>
+
+  </nav>
+</div>
+
+<div class="page-label">Sentriq AI · Navbar Preview</div>
+
+</body>
+</html>

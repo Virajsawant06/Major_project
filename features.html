@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sentinel — Features</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --teal:   #00d7aa;
+      --blue:   #37b9ff;
+      --bg:     #0a0e15;
+      --card:   #0d1420;
+      --card2:  #0b1219;
+      --border: rgba(0,215,170,0.12);
+      --border2: rgba(55,185,255,0.12);
+      --text:   #e8f0f8;
+      --muted:  #5a7a8a;
+    }
+
+    body {
+      background: var(--bg);
+      font-family: 'Sora', sans-serif;
+      min-height: 100vh;
+      padding: 80px 24px;
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* bg radials */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 60% 40% at 10% 10%, rgba(0,215,170,0.06) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 35% at 90% 80%, rgba(55,185,255,0.07) 0%, transparent 65%);
+    }
+
+    /* grid bg */
+    body::after {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(0,215,170,0.028) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,215,170,0.028) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    .page {
+      position: relative; z-index: 1;
+      max-width: 1160px;
+      margin: 0 auto;
+    }
+
+    /* ── Section header ── */
+    .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 14px;
+      opacity: 0.8;
+    }
+
+    .section-title {
+      font-size: clamp(36px, 5vw, 58px);
+      font-weight: 800;
+      line-height: 1.06;
+      letter-spacing: -0.02em;
+      color: #f0f8ff;
+      margin-bottom: 14px;
+    }
+
+    .section-title span {
+      background: linear-gradient(120deg, var(--teal), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .section-sub {
+      font-size: 15px;
+      color: var(--muted);
+      font-weight: 300;
+      max-width: 480px;
+      line-height: 1.7;
+      margin-bottom: 64px;
+    }
+
+    /* ── Grid ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+    }
+
+    /* ── Base card ── */
+    .card {
+      position: relative;
+      border-radius: 18px;
+      padding: 36px 32px 100px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--card);
+      transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      min-height: 280px;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(0,215,170,0.28);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(0,215,170,0.08) inset;
+    }
+
+    /* Column spans */
+    .card--wide   { grid-column: span 7; }
+    .card--narrow { grid-column: span 5; }
+    .card--third  { grid-column: span 4; }
+    .card--half   { grid-column: span 6; }
+    .card--full   { grid-column: span 12; }
+
+    /* Accent variants */
+    .card--blue {
+      border-color: var(--border2);
+      background: var(--card2);
+    }
+    .card--blue:hover {
+      border-color: rgba(55,185,255,0.28);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(55,185,255,0.08) inset;
+    }
+
+    /* ── Large BG text ── */
+    .bg-text {
+      position: absolute;
+      bottom: -12px;
+      left: 0; right: 0;
+      font-size: clamp(72px, 12vw, 110px);
+      font-weight: 800;
+      letter-spacing: -0.06em;
+      line-height: 0.85;
+      color: transparent;
+      -webkit-text-stroke: 1.5px rgba(0,215,170,0.10);
+      background: linear-gradient(180deg, rgba(0,215,170,0.13) 0%, rgba(0,215,170,0.03) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      user-select: none;
+      pointer-events: none;
+      white-space: nowrap;
+      overflow: hidden;
+      padding-left: 28px;
+      transition: opacity 0.35s ease, -webkit-text-stroke 0.35s ease;
+      /* fade bottom edge */
+      -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+    }
+
+    .card--blue .bg-text {
+      -webkit-text-stroke: 1.5px rgba(55,185,255,0.10);
+      background: linear-gradient(180deg, rgba(55,185,255,0.13) 0%, rgba(55,185,255,0.03) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+
+    .card:hover .bg-text {
+      -webkit-text-stroke: 1.5px rgba(0,215,170,0.18);
+      background: linear-gradient(180deg, rgba(0,215,170,0.22) 0%, rgba(0,215,170,0.04) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+    .card--blue:hover .bg-text {
+      -webkit-text-stroke: 1.5px rgba(55,185,255,0.18);
+      background: linear-gradient(180deg, rgba(55,185,255,0.22) 0%, rgba(55,185,255,0.04) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+
+    /* ── Card inner ── */
+    .card-icon {
+      width: 42px; height: 42px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 22px;
+      flex-shrink: 0;
+      position: relative; z-index: 1;
+    }
+
+    .card-icon--teal { background: rgba(0,215,170,0.10); border: 1px solid rgba(0,215,170,0.2); }
+    .card-icon--blue { background: rgba(55,185,255,0.10); border: 1px solid rgba(55,185,255,0.2); }
+
+    .card-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 10px;
+      position: relative; z-index: 1;
+    }
+    .card--blue .card-tag { color: var(--blue); }
+
+    .card-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #eef4fc;
+      margin-bottom: 12px;
+      line-height: 1.2;
+      position: relative; z-index: 1;
+    }
+
+    .card-desc {
+      font-size: 13.5px;
+      color: var(--muted);
+      line-height: 1.75;
+      font-weight: 300;
+      position: relative; z-index: 1;
+    }
+
+    .card-desc strong {
+      color: rgba(0,215,170,0.75);
+      font-weight: 500;
+    }
+    .card--blue .card-desc strong { color: rgba(55,185,255,0.75); }
+
+    /* ── Stat number inside card ── */
+    .stat {
+      margin-top: auto;
+      padding-top: 28px;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      position: relative; z-index: 1;
+    }
+
+    .stat-num {
+      font-size: 38px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      background: linear-gradient(120deg, var(--teal), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ── Divider line ── */
+    .card-divider {
+      width: 32px; height: 1.5px;
+      background: linear-gradient(90deg, var(--teal), transparent);
+      margin: 20px 0;
+      position: relative; z-index: 1;
+    }
+    .card--blue .card-divider { background: linear-gradient(90deg, var(--blue), transparent); }
+
+    /* ── Pill tags ── */
+    .pill-row {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin-top: 20px;
+      position: relative; z-index: 1;
+    }
+
+    .pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      padding: 4px 11px;
+      border-radius: 99px;
+      border: 1px solid rgba(0,215,170,0.2);
+      color: rgba(0,215,170,0.7);
+      background: rgba(0,215,170,0.05);
+      letter-spacing: 0.05em;
+    }
+    .pill--blue {
+      border-color: rgba(55,185,255,0.2);
+      color: rgba(55,185,255,0.7);
+      background: rgba(55,185,255,0.05);
+    }
+
+    /* ── Wide card visual accent (animated dash) ── */
+    .dash-line {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1.5px;
+      background: linear-gradient(90deg, transparent, var(--teal), transparent);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    .card--blue .dash-line { background: linear-gradient(90deg, transparent, var(--blue), transparent); }
+    .card:hover .dash-line { opacity: 1; }
+
+    /* ── Corner hex deco ── */
+    .hex-deco {
+      position: absolute;
+      top: -18px; right: -18px;
+      opacity: 0.06;
+      pointer-events: none;
+    }
+
+    /* ── Full-width card inner grid ── */
+    .card-inner-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 32px;
+      position: relative; z-index: 1;
+    }
+
+    .inner-item { display: flex; flex-direction: column; gap: 8px; }
+    .inner-item-num {
+      font-size: 46px;
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      line-height: 1;
+      background: linear-gradient(120deg, var(--teal) 30%, var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .inner-item-label {
+      font-size: 13px; font-weight: 600; color: #c0d4e0; letter-spacing: -0.01em;
+    }
+    .inner-item-sub {
+      font-size: 12px; color: var(--muted); font-weight: 300; line-height: 1.6;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .card--wide, .card--narrow, .card--third, .card--half { grid-column: span 12; }
+      .card-inner-grid { grid-template-columns: 1fr; gap: 24px; }
+      .bg-text { font-size: 72px; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <p class="section-label">// Features</p>
+  <h2 class="section-title">Built to protect.<br><span>Engineered to scale.</span></h2>
+  <p class="section-sub">Every layer of Sentinel is designed with precision — from real-time threat detection to zero-config deployment.</p>
+
+  <!-- Cards grid -->
+  <div class="grid">
+
+    <!-- ① Wide — Threat Detection -->
+    <div class="card card--wide">
+      <div class="dash-line"></div>
+      <svg class="hex-deco" width="120" height="138" viewBox="0 0 164 188" fill="none">
+        <polygon points="82 0 164 47 164 141 82 188 0 141 0 47 82 0" fill="none" stroke="#00d7aa" stroke-width="2"/>
+      </svg>
+      <div class="card-icon card-icon--teal">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.35C17.25 22.15 21 17.25 21 12V7L12 2Z" stroke="#00d7aa" stroke-width="1.5"/>
+          <path d="M9 12l2 2 4-4" stroke="#00d7aa" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <p class="card-tag">01 — Detection</p>
+      <h3 class="card-title">Real-Time Threat Intelligence</h3>
+      <div class="card-divider"></div>
+      <p class="card-desc">Sentinel monitors every dependency, endpoint, and runtime call with <strong>sub-100ms latency</strong>. Zero-day exploits, supply chain attacks, and anomalous patterns are flagged before they escalate — not after.</p>
+      <div class="pill-row">
+        <span class="pill">CVE Scanning</span>
+        <span class="pill">Supply Chain</span>
+        <span class="pill">Zero-Day</span>
+        <span class="pill">Runtime Analysis</span>
+      </div>
+      <span class="bg-text">THREAT</span>
+    </div>
+
+    <!-- ② Narrow — Speed stat -->
+    <div class="card card--narrow card--blue">
+      <div class="dash-line"></div>
+      <div class="card-icon card-icon--blue">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="9" stroke="#37b9ff" stroke-width="1.5"/>
+          <path d="M12 7v5l3 3" stroke="#37b9ff" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <p class="card-tag">02 — Speed</p>
+      <h3 class="card-title">Blazing Fast Scans</h3>
+      <div class="card-divider"></div>
+      <p class="card-desc">Full project scans complete in <strong>under 3 seconds</strong>. CI gates never block your pipeline.</p>
+      <div class="stat">
+        <span class="stat-num">&lt;3s</span>
+        <span class="stat-label">full scan</span>
+      </div>
+      <span class="bg-text">SPEED</span>
+    </div>
+
+    <!-- ③ Third — Coverage -->
+    <div class="card card--third">
+      <div class="dash-line"></div>
+      <div class="card-icon card-icon--teal">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="#00d7aa" stroke-width="1.5"/>
+          <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="#00d7aa" stroke-width="1.5"/>
+          <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="#00d7aa" stroke-width="1.5"/>
+          <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="#00d7aa" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <p class="card-tag">03 — Coverage</p>
+      <h3 class="card-title">Universal Language Support</h3>
+      <div class="card-divider"></div>
+      <p class="card-desc">From <strong>Node.js</strong> to Python, Go, Rust, and Java — one engine covers every stack you ship.</p>
+      <div class="pill-row">
+        <span class="pill">Node</span>
+        <span class="pill">Python</span>
+        <span class="pill">Go</span>
+        <span class="pill">Rust</span>
+      </div>
+      <span class="bg-text">UNIVERSAL</span>
+    </div>
+
+    <!-- ④ Third — CI/CD -->
+    <div class="card card--third card--blue">
+      <div class="dash-line"></div>
+      <div class="card-icon card-icon--blue">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M8 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-3" stroke="#37b9ff" stroke-width="1.5"/>
+          <rect x="8" y="3" width="8" height="5" rx="1.5" stroke="#37b9ff" stroke-width="1.5"/>
+          <path d="M9 14l2 2 4-4" stroke="#37b9ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <p class="card-tag">04 — Workflow</p>
+      <h3 class="card-title">Native CI/CD Integration</h3>
+      <div class="card-divider"></div>
+      <p class="card-desc">Drop into <strong>GitHub Actions, GitLab CI</strong>, or any pipeline with a single config line.</p>
+      <div class="pill-row">
+        <span class="pill--blue pill">GitHub</span>
+        <span class="pill--blue pill">GitLab</span>
+        <span class="pill--blue pill">Docker</span>
+      </div>
+      <span class="bg-text">PIPELINE</span>
+    </div>
+
+    <!-- ⑤ Third — Zero Config -->
+    <div class="card card--third">
+      <div class="dash-line"></div>
+      <div class="card-icon card-icon--teal">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="#00d7aa" stroke-width="1.5" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <p class="card-tag">05 — Setup</p>
+      <h3 class="card-title">Zero Config by Default</h3>
+      <div class="card-divider"></div>
+      <p class="card-desc">One command. <strong>No YAML sprawl</strong>, no token setup, no dashboard login required to get started.</p>
+      <div class="stat">
+        <span class="stat-num">1</span>
+        <span class="stat-label">command install</span>
+      </div>
+      <span class="bg-text">INSTANT</span>
+    </div>
+
+    <!-- ⑥ Full width — Stats bar -->
+    <div class="card card--full card--blue">
+      <div class="dash-line"></div>
+      <p class="card-tag" style="margin-bottom:28px;">06 — By the numbers</p>
+      <div class="card-inner-grid">
+        <div class="inner-item">
+          <span class="inner-item-num">98.6%</span>
+          <span class="inner-item-label">Threat Detection Rate</span>
+          <span class="inner-item-sub">Benchmarked against OWASP Top 10 and NVD CVE database across 12M+ projects.</span>
+        </div>
+        <div class="inner-item">
+          <span class="inner-item-num">4.2M</span>
+          <span class="inner-item-label">Packages Indexed</span>
+          <span class="inner-item-sub">NPM, PyPI, crates.io, and Maven — updated continuously from upstream sources.</span>
+        </div>
+        <div class="inner-item">
+          <span class="inner-item-num">0ms</span>
+          <span class="inner-item-label">Cold Start Overhead</span>
+          <span class="inner-item-sub">Native binary with no JVM, no runtime daemon — starts and exits clean every time.</span>
+        </div>
+      </div>
+      <span class="bg-text">NUMBERS</span>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
