@@ -183,14 +183,11 @@ def run_scan_with_ui(url):
             findings_so_far.append(finding)
             severity = finding["severity"]
             dot_color = SEVERITY_DOT_COLORS.get(severity, "white")
-            evidence = finding.get("evidence") or finding.get("payload") or ""
-            evidence_str = f" [dim]· {evidence[:30]}...[/dim]" if evidence else ""
-            
             progress.console.print(
                 f"    [{dot_color}]{SEVERITY_ICONS[severity]}[/{dot_color}]"
                 f"  [bold white]{finding['vuln_type']}[/bold white]"
-                f"  [dim]{finding['endpoint'][:40]}[/dim]"
-                f"  [dim]{severity}[/dim]{evidence_str}"
+                f"  [dim]{finding['endpoint'][:50]}[/dim]"
+                f"  [dim]{severity}[/dim]"
             )
 
         results = run_zap_scan_live(
@@ -250,17 +247,6 @@ def show_summary(results):
             "  [dim]This doesn't guarantee full security."
             " Try --mode deep for a thorough pass.[/dim]"
         )
-    
-    # Reviewer verification info
-    console.print()
-    _dim_rule("Verification for Reviewers")
-    console.print()
-    console.print("  [white]To prove these findings are real:[/white]")
-    console.print("  1. Check the raw scan logs (JSON) containing exact payloads:")
-    console.print(f"     [cyan].sentinel/scans/[/cyan]")
-    console.print("  2. Manually verify the 'evidence' payloads in a browser.")
-    console.print("  3. View the ZAP or Docker logs for low-level request traffic.")
-    console.print()
     console.print()
 
 
@@ -288,17 +274,8 @@ def show_findings(results):
             f"  [dim]{i+1:>3}[/dim]  [white]{finding['vuln_type']}[/white]"
         )
         console.print(f"       [dim]{finding['endpoint'][:70]}[/dim]")
-        
         if finding.get("parameter"):
-            console.print(f"       [dim]param    {finding['parameter']}[/dim]")
-        
-        evidence = finding.get("evidence") or finding.get("payload")
-        if evidence:
-            # truncate and clean up
-            ev = str(evidence).replace("\n", " ").strip()
-            if len(ev) > 80: ev = ev[:77] + "..."
-            console.print(f"       [cyan]evidence[/cyan] [dim]{ev}[/dim]")
-            
+            console.print(f"       [dim]param  {finding['parameter']}[/dim]")
         console.print()
 
 

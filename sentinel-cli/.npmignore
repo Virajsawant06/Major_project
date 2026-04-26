@@ -1,21 +1,49 @@
 # Ignore local development files
 .env
-.sentinel
-.git
+.sentinel/
+.git/
 .gitignore
-__pycache__
+.npmignore
+__pycache__/
 *.pyc
-sentinel.egg-info
-sentinel_security.egg-info
-dist
-build
-node_modules
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.hypothesis/
+.pytest_cache/
+
+# Project metadata
+sentinel.egg-info/
+sentinel_security.egg-info/
+dist/
+build/
+node_modules/
 *.tgz
 
-# Ignore scan data
+# Ignore scan data and docs not needed for runtime
 scans/
 logs/
 output/
 temp/
 findings.json
 patches.json
+DOCKER-INSTALL-GUIDE.md
+NPM-INSTALL-GUIDE.md
+Dockerfile
+docker-compose.yml
+docker-entrypoint.sh
+test_brain.py
+check_setup.py
+Report.md
