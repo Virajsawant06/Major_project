@@ -1,5 +1,7 @@
 import time
 import requests
+import subprocess
+import os
 from datetime import datetime
 from src.attack.nikto_scanner import run_nikto
 from src.attack.exposure import check_exposure
@@ -10,8 +12,105 @@ ZAP_BASE = "http://127.0.0.1:8080"
 
 def zap_get(endpoint, params=None):
     url = f"{ZAP_BASE}/JSON/{endpoint}/"
-    r = requests.get(url, params=params, timeout=30)
-    return r.json()
+    try:
+        r = requests.get(url, params=params, timeout=10)
+        return r.json()
+    except Exception as e:
+        return {"error": str(e), "status": "failed"}
+
+
+def start_zap_daemon():
+    """Tries to find and launch the ZAP daemon on Windows or Linux/Docker."""
+    # Common installation paths
+    paths = [
+        # Windows
+        r"C:\Program Files\ZAP\Zed Attack Proxy\zap.bat",
+        r"C:\Program Files (x86)\ZAP\Zed Attack Proxy\zap.bat",
+        os.path.expanduser(r"~\AppData\Local\Programs\ZAP\Zed Attack Proxy\zap.bat"),
+        # Linux / Docker
+        "/opt/zap/zap.sh",
+        "/usr/bin/zap.sh",
+        "/usr/local/bin/zap.sh"
+    ]
+    
+    zap_path = None
+    for p in paths:
+        if os.path.exists(p):
+            zap_path = p
+            break
+            
+    if not zap_path:
+        return False, "ZAP installation not found. Please install ZAP or start it manually."
+    
+    zap_dir = os.path.dirname(zap_path)
+    
+    if os.name == 'nt':
+        # Windows startup logic
+        full_cmd = (
+            f'start "ZAP Daemon" /min cmd /c '
+            f'\"call zap.bat -daemon -port 8080 '
+            f'-config api.disablekey=true '
+            f'-config api.addrs.addr.name=127.0.0.1 '
+            f'-config api.addrs.addr.regex=true\"'
+        )
+        subprocess.Popen(full_cmd, cwd=zap_dir, shell=True)
+    else:
+        # Linux / Docker startup logic
+        cmd = [
+            zap_path,
+            "-daemon",
+            "-port", "8080",
+            "-config", "api.disablekey=true",
+            "-config", "api.addrs.addr.name=127.0.0.1",
+            "-config", "api.addrs.addr.regex=true"
+        ]
+        subprocess.Popen(cmd, cwd=zap_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        
+    return True, "ZAP process launched."
+
+
+def ensure_zap_running(console=None):
+    """Ensures ZAP is responsive, starting it if necessary."""
+    try:
+        r = requests.get(f"{ZAP_BASE}/JSON/core/view/version/", timeout=3)
+        if r.status_code == 200 and "version" in r.json():
+            return True
+        # If we got a response but it's not ZAP's JSON, the port is occupied
+        if console:
+            console.print("\n  [red]![/red] Port 8080 is occupied by another application.")
+            console.print("  [dim]Please close any other web servers running on 8080.[/dim]")
+        return False
+    except (requests.ConnectionError, requests.Timeout):
+        # Port is free or ZAP is just not there, proceed to start
+        pass
+    except Exception:
+        # Other errors (like bad JSON) also suggest the port is occupied by something else
+        if console:
+            console.print("\n  [red]![/red] Port 8080 is occupied but not responding as ZAP.")
+        return False
+    
+    if console:
+        console.print("\n  [yellow]![/yellow] ZAP Daemon not responding.")
+        console.print("  [cyan]▸[/cyan] Attempting to start ZAP automatically...")
+    
+    success, msg = start_zap_daemon()
+    if not success:
+        if console: console.print(f"  [red]✗[/red] {msg}")
+        return False
+    
+    # Poll until ready
+    max_retries = 30
+    for i in range(max_retries):
+        time.sleep(3)
+        z_ver = zap_get("core/view/version")
+        if "version" in z_ver:
+            if console: console.print(f"  [green]✓[/green] ZAP is ready (v{z_ver['version']})")
+            return True
+        if console and i % 4 == 0:
+            console.print(f"    [dim]Booting ZAP... ({i*3}s)[/dim]")
+            
+    if console: console.print("  [red]✗[/red] ZAP failed to initialize in time. Try starting it manually.")
+    return False
 
 
 def run_zap_scan_live(
@@ -32,8 +131,15 @@ def run_zap_scan_live(
     This keeps the terminal clean when called from brain.py with no callbacks.
     """
 
+    # Ensure ZAP is running before starting
+    if not ensure_zap_running(console=console):
+        if on_finding:
+            on_finding({"vuln_type": "ZAP Error", "severity": "High", "endpoint": ZAP_BASE, "error": "ZAP Daemon could not be started automatically."})
+        return {"findings": [], "error": "ZAP not running"}
+
     # Test ZAP connection
-    version = zap_get("core/view/version")["version"]
+    z_ver = zap_get("core/view/version")
+    version = z_ver.get("version", "unknown")
 
     # Base seed URLs
     seed_urls = [

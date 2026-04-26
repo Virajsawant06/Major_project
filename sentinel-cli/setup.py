@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="sentinel",
-    version="0.2.0",
+    version="0.2.1",
     packages=find_packages(),
     py_modules=["sentinel_cli"],
     install_requires=[

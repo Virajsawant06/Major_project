@@ -49,40 +49,67 @@ app.add_typer(report_app, name="report")
 
 # ── UI Helpers ─────────────────────────────────────────────────────────────────
 
-BANNER = """
-[bold cyan]  ███████╗███████╗███╗   ██╗████████╗██╗███╗   ██╗███████╗██╗
-  ██╔════╝██╔════╝████╗  ██║╚══██╔══╝██║████╗  ██║██╔════╝██║
-  ███████╗█████╗  ██╔██╗ ██║   ██║   ██║██╔██╗ ██║█████╗  ██║
-  ╚════██║██╔══╝  ██║╚██╗██║   ██║   ██║██║╚██╗██║██╔══╝  ██║
-  ███████║███████╗██║ ╚████║   ██║   ██║██║ ╚████║███████╗███████╗
-  ╚══════╝╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚═╝╚═╝  ╚═══╝╚══════╝╚══════╝[/bold cyan]
-"""
+# ── Brand identity ─────────────────────────────────────────────────────────────
+
+TAGLINE = "Ethical Hacking · AI Patch Engine · v0.2.0 — Production Ready"
+
+_BANNER_ROWS = [
+    "  ███████╗███████╗███╗   ██╗████████╗██╗███╗   ██╗███████╗██╗      ",
+    "  ██╔════╝██╔════╝████╗  ██║╚══██╔══╝██║████╗  ██║██╔════╝██║      ",
+    "  ███████╗█████╗  ██╔██╗ ██║   ██║   ██║██╔██╗ ██║█████╗  ██║      ",
+    "  ╚════██║██╔══╝  ██║╚██╗██║   ██║   ██║██║╚██╗██║██╔══╝  ██║      ",
+    "  ███████║███████╗██║ ╚████║   ██║   ██║██║ ╚████║███████╗███████╗  ",
+    "  ╚══════╝╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚═╝╚═╝  ╚═══╝╚══════╝╚══════╝  ",
+]
+
+_GRADIENT = [
+    "#1560bd",  # deep blue
+    "#1a80d0",
+    "#0ea5e9",  # sky blue
+    "#06c0d8",
+    "#00d4d4",  # cyan-teal
+    "#00e5c8",  # bright cyan
+]
 
 def show_banner():
-    console.print(BANNER)
-    console.print(
-        "  [dim white]Ethical Hacking + AI Patch Engine[/dim white]   "
-        "[bold green]v0.2.0 — Production Ready[/bold green]\n"
-    )
+    console.print()
+    from rich.align import Align
+    from rich.text import Text
+    from rich.rule import Rule
+    for row, color in zip(_BANNER_ROWS, _GRADIENT):
+        console.print(f"[bold {color}]{row}[/bold {color}]")
+    console.print()
+    console.print(Align.center(Text(TAGLINE, style="dim white")))
+    console.print()
+    console.print(Rule(style="dim white"))
+    console.print()
 
 def ethics_check(url: str):
+    from rich.panel import Panel
+    from rich.text import Text
     console.print()
-    console.print(Panel(
-        f"[bold white]Target[/bold white]\n"
-        f"[cyan]  {url}[/cyan]\n\n"
-        f"[yellow]⚠  By proceeding you confirm:[/yellow]\n"
-        f"[dim]  • You own this target, or\n"
-        f"  • You have explicit written permission to test it\n\n"
-        f"  Unauthorized scanning is illegal and may result\n"
-        f"  in criminal charges.[/dim]",
-        border_style="yellow",
-        title="[yellow]Ethics Disclaimer[/yellow]",
-        width=60
-    ))
+    console.print(
+        Panel(
+            Text.assemble(
+                ("  Target\n", "bold white"),
+                (f"  {url}\n\n", "cyan"),
+                ("  You confirm that you:\n", "dim white"),
+                ("  • own this target, or\n", "dim white"),
+                ("  • hold explicit written permission to test it.\n\n", "dim white"),
+                ("  Unauthorized scanning is illegal.", "dim red"),
+            ),
+            border_style="dim white",
+            title="[dim]Authorization Required[/dim]",
+            title_align="left",
+            padding=(0, 1),
+            width=62,
+        )
+    )
     console.print()
-    confirm = console.input("  [bold white]Type [green]YES[/green] to confirm and start scan:[/bold white] ")
+    confirm = console.input("  Type [bold green]YES[/bold green] to confirm → ")
     if confirm.strip().upper() != "YES":
-        console.print("\n  [red]✗ Scan cancelled.[/red]\n")
+        console.print()
+        console.print("  [red]✗[/red] Scan cancelled.\n")
         sys.exit(0)
     console.print()
 
@@ -111,6 +138,10 @@ def scan(
         ethics_check(url)
         
     cfg.log(f"Started {mode} scan on {url}")
+    
+    if mode == "deep":
+        from src.attack.zap_scanner import ensure_zap_running
+        ensure_zap_running(console=console)
     
     provider = cfg.get("ai_provider", "openrouter")
     

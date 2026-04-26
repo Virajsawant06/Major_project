@@ -170,7 +170,6 @@ def execute_tool(tool_name: str, target_url: str, auth_header: str = None, login
             return engine.run_all(context.get("get_params", []), context.get("forms", []))
             
         elif tool_name == "run_ssl_check":
-            from src.plugins.builtin import ssl_check
             # SSL check plugin is a module with a run() function, but wait, it's run.py in plugins/builtin/ssl-check/
             # Better to use the plugin manager
             from src.plugins.manager import run_plugin
@@ -268,83 +267,101 @@ class AttackBrain:
         errors_seen = set()   # deduplicate repeated error messages
         MAX_STEPS = 10
 
-        # ── Intelligence loop ──────────────────────────────────────────────────
-        scan_context = {}
-        for step in range(MAX_STEPS):
+        from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
+        
+        with Progress(
+            SpinnerColumn(spinner_name="dots", style="cyan"),
+            TextColumn("[bold white]{task.description:<30}"),
+            BarColumn(bar_width=20, style="dim white", complete_style="cyan"),
+            TimeElapsedColumn(),
+            console=con,
+            transient=True
+        ) as progress:
+            scan_task = progress.add_task("Initializing...", total=MAX_STEPS)
 
-            response = self.client.chat.completions.create(
-                model="nvidia/nemotron-3-super-120b-a12b:free",
-                messages=messages,
-                tools=available_tools,
-                tool_choice="auto",
-                temperature=0.2,
-                max_completion_tokens=1024
-            )
+            # ── Intelligence loop ──────────────────────────────────────────────────
+            scan_context = {}
+            for step in range(MAX_STEPS):
+                progress.update(scan_task, description="AI Thinking...")
 
-            msg = response.choices[0].message
-            messages.append(msg)
+                response = self.client.chat.completions.create(
+                    model="nvidia/nemotron-3-super-120b-a12b:free",
+                    messages=messages,
+                    tools=available_tools,
+                    tool_choice="auto",
+                    temperature=0.2,
+                    max_completion_tokens=1024
+                )
 
-            # AI's reasoning is intentionally hidden from user
-            # It goes into messages for context but not to terminal
+                msg = response.choices[0].message
+                messages.append(msg)
 
-            if not msg.tool_calls:
-                break
+                # AI's reasoning is intentionally hidden from user
+                # It goes into messages for context but not to terminal
 
-            for call in msg.tool_calls:
-                tool_name = call.function.name
-                args = json.loads(call.function.arguments)
-                url = args.get("target_url", target_url)
+                if not msg.tool_calls:
+                    break
 
-                # Skip duplicate tool calls silently
-                if tool_name in tools_used:
+                for call in msg.tool_calls:
+                    tool_name = call.function.name
+                    args = json.loads(call.function.arguments)
+                    url = args.get("target_url", target_url)
+
+                    # Skip duplicate tool calls silently
+                    if tool_name in tools_used:
+                        messages.append({
+                            "tool_call_id": call.id,
+                            "role": "tool",
+                            "name": tool_name,
+                            "content": json.dumps({"note": "Already ran."})
+                        })
+                        continue
+
+                    tools_used.add(tool_name)
+                    label = TOOL_LABELS.get(tool_name, tool_name)
+                    progress.update(scan_task, description=f"Running: {label}...")
+                    
+                    # We still print a small marker so the findings scroll nicely below it
+                    con.print(f"\n  [cyan]▸[/cyan] [white]{label}[/white]")
+
+                    findings = execute_tool(tool_name, url, auth_header=auth_header, login_url=login_url, request_file=request_file, context=scan_context)
+
+                    # Separate real findings from errors
+                    valid   = [f for f in findings if "error" not in f]
+                    errors  = [f for f in findings if "error" in f]
+
+                    all_findings.extend(valid)
+
+                    # Show clean finding count
+                    if valid:
+                        con.print(f"    [green]✓[/green] {len(valid)} finding(s)")
+                    else:
+                        con.print(f"    [dim]✓ Complete — no findings[/dim]")
+
+                    # Show errors once only, deduplicated, short
+                    for err in errors:
+                        msg_text = err.get("error", "")
+                        if msg_text and msg_text not in errors_seen:
+                            errors_seen.add(msg_text)
+                            con.print(f"    [yellow]![/yellow] {msg_text}")
+
+                    # Feed result back to AI (truncate if huge)
+                    result_str = json.dumps({
+                        "findings_count": len(valid),
+                        "findings": valid
+                    })
+                    if len(result_str) > 12000:
+                        result_str = result_str[:12000] + "... [TRUNCATED]"
+
                     messages.append({
                         "tool_call_id": call.id,
                         "role": "tool",
                         "name": tool_name,
-                        "content": json.dumps({"note": "Already ran."})
+                        "content": result_str,
                     })
-                    continue
+                    progress.advance(scan_task)
 
-                tools_used.add(tool_name)
-                label = TOOL_LABELS.get(tool_name, tool_name)
-                con.print(f"\n  [cyan]▸[/cyan] {label}")
-
-                findings = execute_tool(tool_name, url, auth_header=auth_header, login_url=login_url, request_file=request_file, context=scan_context)
-
-                # Separate real findings from errors
-                valid   = [f for f in findings if "error" not in f]
-                errors  = [f for f in findings if "error" in f]
-
-                all_findings.extend(valid)
-
-                # Show clean finding count
-                if valid:
-                    con.print(f"    [green]✓[/green] {len(valid)} finding(s)")
-                else:
-                    con.print(f"    [dim]✓ Complete — no findings[/dim]")
-
-                # Show errors once only, deduplicated, short
-                for err in errors:
-                    msg_text = err.get("error", "")
-                    if msg_text and msg_text not in errors_seen:
-                        errors_seen.add(msg_text)
-                        con.print(f"    [yellow]![/yellow] {msg_text}")
-
-                # Feed result back to AI (truncate if huge)
-                result_str = json.dumps({
-                    "findings_count": len(valid),
-                    "findings": valid
-                })
-                if len(result_str) > 12000:
-                    result_str = result_str[:12000] + "... [TRUNCATED]"
-
-                messages.append({
-                    "tool_call_id": call.id,
-                    "role": "tool",
-                    "name": tool_name,
-                    "content": result_str,
-                })
-
+        progress.update(scan_task, description="Finalizing report...", completed=MAX_STEPS)
         con.print()
         con.print(Rule(style="dim cyan"))
 
